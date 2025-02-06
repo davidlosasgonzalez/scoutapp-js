@@ -128,7 +128,7 @@ const CreatePlayerPage = () => {
                         type="radio"
                         id="leftFoot"
                         name="strongFoot"
-                        value="left"
+                        value="izquierda"
                         onChange={handleChange}
                         required
                     />
@@ -138,7 +138,7 @@ const CreatePlayerPage = () => {
                         type="radio"
                         id="rightFoot"
                         name="strongFoot"
-                        value="right"
+                        value="derecha"
                         onChange={handleChange}
                         required
                     />
@@ -146,13 +146,13 @@ const CreatePlayerPage = () => {
 
                     <input
                         type="radio"
-                        id="dualFoot"
+                        id="ambidiestro"
                         name="strongFoot"
                         value="dual"
                         onChange={handleChange}
                         required
                     />
-                    <label htmlFor="dualFoot">Ambidiestro</label>
+                    <label htmlFor="ambidiestro">Ambidiestro</label>
                 </fieldset>
 
                 <button disabled={loading}>Crear jugador</button>

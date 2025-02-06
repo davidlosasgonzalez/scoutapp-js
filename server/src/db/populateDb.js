@@ -15,7 +15,7 @@ const populateDb = async () => {
         // Fecha de inserción de los datos.
         const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
-        // Insertar datos en la tabla users
+        // Insertar datos en la tabla users.
         await pool.query(`
             INSERT INTO users (username, firstName, lastName, birthDate, email, password, role, createdAt) 
             VALUES
@@ -41,35 +41,35 @@ const populateDb = async () => {
                 ("scout9", "Javier", "Perez", "1995-05-01", "scout9@example.com", "${hashedPass}", "scout", "${now}");
         `);
 
-        // Insertar datos en la tabla players
+        // Insertar datos en la tabla players.
         await pool.query(`
             INSERT INTO players (familyUserId, firstName, lastName, birthDate, position, skills, team, strongFoot, createdAt) 
             VALUES
-                (1, "John", "Doe", "2015-08-20", "Forward", "Speed, Finishing", "Youth Stars", "right", "${now}"),
-                (1, "James", "Smith", "2016-10-15", "Midfielder", "Passing, Vision", "Future Talents", "left", "${now}"),
+                (1, "John", "Doe", "2015-08-20", "Forward", "Speed, Finishing", "Youth Stars", "derecha", "${now}"),
+                (1, "James", "Smith", "2016-10-15", "Midfielder", "Passing, Vision", "Future Talents", "izquierda", "${now}"),
                 (2, "Lucas", "Johnson", "2014-04-30", "Defender", "Tackling, Strength", "Defense Warriors", "dual", "${now}"),
-                (2, "Michael", "Brown", "2017-12-05", "Goalkeeper", "Reflexes, Positioning", "Safe Hands FC", "right", "${now}"),
-                (5, "Alex", "Martinez", "2016-01-12", "Forward", "Dribbling, Finishing", "Rising Stars", "left", "${now}"),
+                (2, "Michael", "Brown", "2017-12-05", "Goalkeeper", "Reflexes, Positioning", "Safe Hands FC", "derecha", "${now}"),
+                (5, "Alex", "Martinez", "2016-01-12", "Forward", "Dribbling, Finishing", "Rising Stars", "izquierda", "${now}"),
                 (6, "Carlos", "Gomez", "2015-03-12", "Defender", "Positioning, Tackling", "Solid Wall FC", "dual", "${now}"),
-                (7, "Daniel", "Hernandez", "2016-05-18", "Midfielder", "Dribbling, Passing", "Creative Playmakers", "right", "${now}"),
-                (8, "Sergio", "Lopez", "2014-09-29", "Forward", "Finishing, Speed", "Fast Attackers", "right", "${now}"),
-                (9, "Adrian", "Garcia", "2013-12-03", "Goalkeeper", "Reflexes, Communication", "Ultimate Defense", "left", "${now}");
+                (7, "Daniel", "Hernandez", "2016-05-18", "Midfielder", "Dribbling, Passing", "Creative Playmakers", "derecha", "${now}"),
+                (8, "Sergio", "Lopez", "2014-09-29", "Forward", "Finishing, Speed", "Fast Attackers", "derecha", "${now}"),
+                (9, "Adrian", "Garcia", "2013-12-03", "Goalkeeper", "Reflexes, Communication", "Ultimate Defense", "izquierda", "${now}");
         `);
 
-        // Insertar datos en la tabla playerVideos con IDs reales
+        // Insertar datos en la tabla playerVideos con IDs reales.
         await pool.query(`
             INSERT INTO playerVideos (playerId, youtubeId, createdAt) 
             VALUES
-                (1, "dQw4w9WgXcQ", "${now}"),
-                (1, "kJQP7kiw5Fk", "${now}"), 
-                (2, "3JZ_D3ELwOQ", "${now}"),
-                (3, "9bZkp7q19f0", "${now}"), 
-                (4, "Zi_XLOBDo_Y", "${now}"),
-                (5, "L_jWHffIx5E", "${now}"),
-                (6, "3tmd-ClpJxA", "${now}")
+                (1, "c9mK2enm26E", "${now}"),
+                (2, "dQXZ8_V7WEE", "${now}"), 
+                (3, "JHF87zfI-io", "${now}"), 
+                (4, "WfRsP1Xx9T0", "${now}"),
+                (5, "cFojC2tlAiw", "${now}"),
+                (6, "C1Qyr68M1JY", "${now}"), 
+                (7, "U-qlboJn1_M", "${now}")
         `);
 
-        // Insertar datos en la tabla hiringRequests
+        // Insertar datos en la tabla hiringRequests.
         await pool.query(`
             INSERT INTO hiringRequests (scoutUserId, playerId, status, createdAt) 
             VALUES

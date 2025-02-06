@@ -40,7 +40,7 @@ const insertPlayerModel = async ({
         playerMustBeMinorError();
     }
 
-    const validFoot = ['left', 'right', 'dual'];
+    const validFoot = ['izquierda', 'derecha', 'dual'];
 
     if (!validFoot.includes(strongFoot)) {
         invalidStrongFootError();

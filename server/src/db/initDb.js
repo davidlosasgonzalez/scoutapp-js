@@ -40,7 +40,7 @@ const initDb = async () => {
                 position VARCHAR(100) NOT NULL, 
                 skills VARCHAR(500), 
                 team VARCHAR(100),
-                strongFoot ENUM("left", "right", "dual") NOT NULL,
+                strongFoot ENUM("izquierda", "derecha", "dual") NOT NULL,
                 createdAt TIMESTAMP NOT NULL,
                 modifiedAt TIMESTAMP
             )

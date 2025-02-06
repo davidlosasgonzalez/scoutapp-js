@@ -106,7 +106,7 @@ const EditPlayerPage = () => {
                                     type="radio"
                                     id="leftFoot"
                                     name="strongFoot"
-                                    value="left"
+                                    value="izquierda"
                                     onChange={handleChange}
                                 />
                                 <label htmlFor="leftFoot">
@@ -117,7 +117,7 @@ const EditPlayerPage = () => {
                                     type="radio"
                                     id="rightFoot"
                                     name="strongFoot"
-                                    value="right"
+                                    value="derecha"
                                     onChange={handleChange}
                                 />
                                 <label htmlFor="rightFoot">
@@ -126,12 +126,12 @@ const EditPlayerPage = () => {
 
                                 <input
                                     type="radio"
-                                    id="dualFoot"
+                                    id="ambidiestro"
                                     name="strongFoot"
                                     value="dual"
                                     onChange={handleChange}
                                 />
-                                <label htmlFor="dualFoot">Ambidiestro</label>
+                                <label htmlFor="ambidiestro">Ambidiestro</label>
                             </fieldset>
 
                             <button disabled={loading}>Editar jugador</button>

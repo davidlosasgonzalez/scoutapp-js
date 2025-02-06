@@ -41,11 +41,11 @@ const registerPlayerSchema = joi
         team: joi.string().min(3).max(100).allow('', null),
         strongFoot: joi
             .string()
-            .valid('right', 'left', 'dual')
+            .valid('derecha', 'izquierda', 'dual')
             .required()
             .messages({
                 'any.only':
-                    'El campo "{#key}" debe ser "right", "left" o "dual".',
+                    'El campo "{#key}" debe ser "derecha", "izquierda" o "dual".',
             }),
     })
     .messages(joiErrorMessages);

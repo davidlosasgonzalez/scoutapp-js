@@ -11,11 +11,11 @@ const editPlayerSchema = joi
         team: joi.string().max(100).allow(''),
         strongFoot: joi
             .string()
-            .valid('right', 'left', 'dual')
+            .valid('derecha', 'izquierda', 'dual')
             .allow('')
             .messages({
                 'any.only':
-                    'El valor de "{#key}" debe ser "right", "left" o "dual"',
+                    'El valor de "{#key}" debe ser "derecha", "izquierda" o "dual"',
             }),
     })
     .custom((value, helpers) => {
