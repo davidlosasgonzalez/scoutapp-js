@@ -1,0 +1,80 @@
+/* No es necesario añadir CSS para crear nuestra aplicación React, mejor
+   hacerlo al final. Todo el CSS que agrego aquí es para hacer más cómoda
+   la programación, en ningún caso representa el CSS real de mi aplicación. */
+
+label {
+    display: block;
+}
+
+html {
+    background-color: rgb(23, 23, 23);
+}
+
+a {
+    text-decoration: none;
+    color: white;
+}
+
+input,
+textarea {
+    font-family: inherit;
+    font-size: inherit;
+}
+
+.edit-player-btn {
+    display: block;
+    padding: 0.5rem;
+    background-color: white;
+    color: black;
+    width: 100px;
+    border-radius: 10px;
+}
+
+div#root {
+    color: white;
+}
+
+div#root > header img {
+    width: 60px;
+}
+
+main.home-page > ul {
+    display: flex;
+    flex-wrap: wrap;
+    list-style: none;
+    gap: 1rem;
+}
+
+main.home-page > ul > li {
+    border: 2px solid white;
+    padding: 1rem;
+    width: 300px;
+}
+
+main.home-page > ul > li header {
+    text-align: center;
+}
+
+main.home-page > ul > li header > img {
+    height: 80px;
+    width: 80px;
+    border-radius: 50%;
+}
+
+main.hiring-request-page > ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    list-style: none;
+}
+
+main.hiring-request-page > ul > li {
+    border: 2px solid white;
+    padding: 1rem;
+}
+
+main.hiring-request-page > ul > li > ul {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
