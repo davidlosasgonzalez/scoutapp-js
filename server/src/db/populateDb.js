@@ -10,7 +10,7 @@ const populateDb = async () => {
         const pool = await getPool();
 
         // Encriptamos la contraseña. Será la misma para todos los usuarios.
-        const hashedPass = await bcrypt.hash('Hackaboss17!', 10);
+        const hashedPass = await bcrypt.hash('Abcd1234!', 10);
 
         // Fecha de inserción de los datos.
         const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
