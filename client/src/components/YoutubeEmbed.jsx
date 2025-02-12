@@ -1,5 +1,7 @@
+// Importamos librerías externas.
 import PropTypes from 'prop-types';
 
+// Inicializamos el componente.
 const YoutubeEmbed = ({ youtubeId }) => {
     return (
         <iframe
@@ -15,6 +17,7 @@ const YoutubeEmbed = ({ youtubeId }) => {
     );
 };
 
+// Definimos las validaciones de las props.
 YoutubeEmbed.propTypes = {
     youtubeId: PropTypes.string.isRequired,
 };

@@ -1,25 +1,102 @@
-import { useContext, useEffect, useRef, useState } from 'react';
+// Importamos los hooks.
+import { useEffect, useRef, useState, useContext } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import useFetch from '../hooks/useFetch';
-import { Navigate } from 'react-router-dom';
-import Input from '../components/Input';
-import { AuthContext } from '../contexts/AuthContext';
-import Avatar from '../components/Avatar';
 
+// Importamos los componentes.
+import { Navigate } from 'react-router-dom';
+
+// Importamos el contexto de autenticación.
+import { AuthContext } from '../contexts/AuthContext';
+
+// Importamos los componentes.
+import Avatar from '../components/Avatar';
+import Input from '../components/Input';
+
+// Importamos las variables de entorno.
 const { VITE_API_URL } = import.meta.env;
+
+// Función para inicializar el formulario con los datos del usuario.
+const initializeForm = (authUser, reset) => {
+    if (authUser) {
+        reset({
+            username: authUser.username,
+            email: authUser.email,
+        });
+    }
+};
+
+// Función para actualizar un campo del usuario.
+const updateField = async (
+    field,
+    getValues,
+    fetchData,
+    authToken,
+    authUpdateProfileState,
+    setEditingField,
+) => {
+    const value = getValues(field);
+
+    const body = await fetchData({
+        url: `${VITE_API_URL}/api/users`,
+        method: 'PUT',
+        body: { [field]: value },
+        authToken,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        toastId: 'privateProfilePage',
+    });
+
+    if (body?.status === 'ok') {
+        authUpdateProfileState(body.data.user);
+        setEditingField(null);
+    }
+};
+
+// Función para subir el avatar.
+const uploadAvatar = async (
+    event,
+    fetchData,
+    authToken,
+    authUpdateProfileState,
+) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    const body = await fetchData({
+        url: `${VITE_API_URL}/api/users/avatar`,
+        method: 'PUT',
+        body: formData,
+        authToken,
+        isFormData: true,
+        toastId: 'privateProfilePage',
+    });
+
+    if (body?.status === 'ok') {
+        authUpdateProfileState(body.data.user);
+    }
+};
 
 // Inicializamos el componente.
 const PrivateProfilePage = () => {
+    // Extraemos valores del contexto de autenticación.
     const { authToken, authUser, authUpdateProfileState } =
         useContext(AuthContext);
 
+    // Extraemos valores del hook `useFetch`.
     const { fetchData, loading } = useFetch();
 
+    // Referencia para el input de subida de archivos (avatar).
     const fileInputRef = useRef(null);
 
+    // Estado para controlar qué campo está en modo edición.
     const [editingField, setEditingField] = useState(null);
 
-    // Configuración del formulario
+    // Configuración del formulario con `react-hook-form`.
     const methods = useForm({
         defaultValues: {
             username: '',
@@ -27,88 +104,50 @@ const PrivateProfilePage = () => {
         },
     });
 
+    // Extraemos métodos útiles de `react-hook-form`.
     const { reset, getValues, setValue } = methods;
 
-    // Cargar los valores del usuario cuando authUser esté disponible
+    // Cargamos los datos del usuario en el formulario cuando `authUser` esté disponible.
     useEffect(() => {
-        if (authUser) {
-            reset({
-                username: authUser?.username,
-                email: authUser?.email,
-            });
-        }
+        initializeForm(authUser, reset);
     }, [authUser, reset]);
 
-    // Función para actualizar un solo campo
-    const handleUpdateField = async (field) => {
-        const value = getValues(field);
-
-        const body = await fetchData({
-            url: `${VITE_API_URL}/api/users`,
-            method: 'PUT',
-            body: { [field]: value },
-            authToken,
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            toastId: 'privateProfilePage',
-        });
-
-        if (body?.status === 'ok') {
-            authUpdateProfileState(body.data.user);
-            setEditingField(null);
-        }
-    };
-
-    // Función para subir avatar automáticamente al seleccionar un archivo
-    const handleAvatarUpload = async (event) => {
-        const file = event.target.files[0];
-
-        if (!file) return;
-
-        const formData = new FormData();
-
-        formData.append('avatar', file);
-
-        const body = await fetchData({
-            url: `${VITE_API_URL}/api/users/avatar`,
-            method: 'PUT',
-            body: formData,
-            authToken,
-            isFormData: true,
-            toastId: 'privateProfilePage',
-        });
-
-        if (body?.status === 'ok') {
-            authUpdateProfileState(body.data.user);
-        }
-    };
-
-    // Si no estamos logueados redirigimos a la página principal.
+    // Si el usuario no está autenticado, lo redirigimos a la página de inicio.
     if (!authUser) return <Navigate to="/" />;
 
     return (
         <main>
             <h2>Página de perfil privado</h2>
 
+            {/* Utilizamos `FormProvider` para proporcionar los métodos de `react-hook-form`. */}
             <FormProvider {...methods}>
                 <form>
+                    {/* Sección del avatar. */}
                     <div className="avatar-container">
                         <Avatar
                             avatar={authUser.avatar}
                             username={authUser.username}
+                            // Permite cambiar avatar al hacer clic.
                             onClick={() => fileInputRef.current?.click()}
                         />
                         <input
                             type="file"
                             ref={fileInputRef}
                             accept="image/*"
-                            onChange={handleAvatarUpload}
-                            style={{ display: 'none' }} // Oculta el input
+                            onChange={(e) =>
+                                uploadAvatar(
+                                    e,
+                                    fetchData,
+                                    authToken,
+                                    authUpdateProfileState,
+                                )
+                            }
+                            // Ocultamos el input de subida de archivos.
+                            style={{ display: 'none' }}
                         />
                     </div>
 
-                    {/* Campo Username con botón de edición */}
+                    {/* Campo username con botón de edición. */}
                     <div className="input-group">
                         <Input
                             label="Usuario"
@@ -123,7 +162,16 @@ const PrivateProfilePage = () => {
                         {editingField === 'username' ? (
                             <button
                                 type="button"
-                                onClick={() => handleUpdateField('username')}
+                                onClick={() =>
+                                    updateField(
+                                        'username',
+                                        getValues,
+                                        fetchData,
+                                        authToken,
+                                        authUpdateProfileState,
+                                        setEditingField,
+                                    )
+                                }
                                 disabled={loading}
                             >
                                 Guardar
@@ -138,7 +186,7 @@ const PrivateProfilePage = () => {
                         )}
                     </div>
 
-                    {/* Campo Email con botón de edición */}
+                    {/* Campo email con botón de edición. */}
                     <div className="input-group">
                         <Input
                             label="Email"
@@ -151,7 +199,16 @@ const PrivateProfilePage = () => {
                         {editingField === 'email' ? (
                             <button
                                 type="button"
-                                onClick={() => handleUpdateField('email')}
+                                onClick={() =>
+                                    updateField(
+                                        'email',
+                                        getValues,
+                                        fetchData,
+                                        authToken,
+                                        authUpdateProfileState,
+                                        setEditingField,
+                                    )
+                                }
                                 disabled={loading}
                             >
                                 Guardar

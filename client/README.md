@@ -1,30 +1,8 @@
-## 🎨 Frontend - React & Vite
+# React + Vite
 
-Este directorio contiene el código del frontend, construido con React.js y Vite.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-### 🔧 Configuración y Uso
+Currently, two official plugins are available:
 
-1. **Instalar dependencias:**
-    ```sh
-    npm install
-    ```
-2. **Configurar variables de entorno:**
-    ```sh
-    cp .env.example .env
-    ```
-3. **Iniciar el cliente en modo desarrollo:**
-    ```sh
-    npm run dev
-    ```
-
-### 🚀 Scripts disponibles
-
-| Comando           | Descripción                                   |
-| ----------------- | --------------------------------------------- |
-| `npm run dev`     | Inicia el cliente en modo desarrollo.         |
-| `npm run build`   | Genera la versión optimizada para producción. |
-| `npm run preview` | Previsualiza la versión de producción.        |
-
-## 🌍 Rutas
-
-Para más detalles, consulta [`docs/routes.md`](./docs/routes.md).
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh

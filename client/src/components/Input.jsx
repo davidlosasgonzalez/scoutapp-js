@@ -1,6 +1,8 @@
+// Importamos librerías externas.
 import PropTypes from 'prop-types';
 import { useFormContext } from 'react-hook-form';
 
+// Inicializamos el componente.
 const Input = ({
     label,
     name,
@@ -9,10 +11,13 @@ const Input = ({
     editable = true,
     ...props
 }) => {
+    // Extraemos métodos de `react-hook-form`.
     const { register, watch, setValue } = useFormContext();
+
+    // Obtenemos el valor actual del input.
     const inputValue = watch(name) || '';
 
-    // Definir `autocomplete` basado en el tipo de input
+    // Función para definir `autocomplete` basado en el tipo de input.
     const getAutocomplete = (type, name) => {
         if (type === 'password') return 'current-password';
         if (name === 'username') return 'username';
@@ -25,6 +30,7 @@ const Input = ({
     return (
         <div className="input-group">
             <label htmlFor={name}>{label}:</label>
+
             <input
                 {...register(name)}
                 type={type}
@@ -33,20 +39,20 @@ const Input = ({
                 value={inputValue}
                 onChange={(e) => setValue(name, e.target.value)}
                 autoComplete={getAutocomplete(type, name)}
-                disabled={!editable} // Deshabilita el input si editable es false
+                disabled={!editable}
                 {...props}
             />
         </div>
     );
 };
 
-// Validación de props con PropTypes
+// Definimos las validaciones de las props.
 Input.propTypes = {
     label: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     type: PropTypes.string,
     refInput: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
-    editable: PropTypes.bool, // Nueva prop para controlar si el input es editable
+    editable: PropTypes.bool,
 };
 
 export default Input;
