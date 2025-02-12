@@ -58,6 +58,7 @@ const registerUserSchema = joi
                     'La contraseña debe contener al menos una mayúscula, una minúscula, un número y un símbolo de puntuación para "{#key}".',
             })
             .required(),
+        repeatedPass: joi.string().min(8).max(100).required(),
         role: joi.string().valid('family', 'scout').required().messages({
             'any.only': 'El valor de "{#key}" debe ser "family" o "scout".',
         }),

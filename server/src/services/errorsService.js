@@ -94,6 +94,14 @@ export const notFoundError = (resource) => {
     };
 };
 
+export const passwordsDoNotMatchError = () => {
+    throw {
+        httpStatus: 400, // Bad Request
+        code: 'PASSWORDS_DO_NOT_MATCH',
+        message: 'Las contraseñas no coinciden',
+    };
+};
+
 export const playerMustBeMinorError = () => {
     throw {
         httpStatus: 409, // Conflict

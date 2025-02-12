@@ -5,9 +5,15 @@ import insertUserModel from '../../models/users/insertUserModel.js';
 import registerUserSchema from '../../schemas/users/registerUserSchema.js';
 import validateSchemaUtil from '../../utils/validateSchemaUtil.js';
 
+// Importamos los errores.
+import { passwordsDoNotMatchError } from '../../services/errorsService.js';
+
 // Inicializamos la función controladora.
 const registerUserController = async (req, res, next) => {
     try {
+        // Validación con joi.
+        await validateSchemaUtil(registerUserSchema, req.body);
+
         const {
             username,
             firstName,
@@ -15,11 +21,14 @@ const registerUserController = async (req, res, next) => {
             birthDate,
             email,
             password,
+            repeatedPass,
             role,
         } = req.body;
 
-        // Validación con joi.
-        await validateSchemaUtil(registerUserSchema, req.body);
+        // Si las contraseñas no coinciden lanzamos un error.
+        if (password !== repeatedPass) {
+            passwordsDoNotMatchError();
+        }
 
         // Insertamos al usuario en la base de datos.
         await insertUserModel({
