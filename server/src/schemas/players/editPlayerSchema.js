@@ -11,7 +11,7 @@ const editPlayerSchema = joi
         team: joi.string().max(100).allow(''),
         strongFoot: joi
             .string()
-            .valid('derecha', 'izquierda', 'ambidiestro')
+            .valid('derecha', 'izquierda', 'dual')
             .allow('')
             .messages({
                 'any.only':

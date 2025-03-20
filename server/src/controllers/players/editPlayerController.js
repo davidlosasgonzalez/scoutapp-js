@@ -25,6 +25,15 @@ const editPlayerController = async (req, res, next) => {
         res.send({
             status: 'ok',
             message: 'Jugador editado',
+            data: {
+                player: {
+                    position,
+                    skills,
+                    team,
+                    strongFoot,
+                    playerId,
+                },
+            },
         });
     } catch (err) {
         next(err);
