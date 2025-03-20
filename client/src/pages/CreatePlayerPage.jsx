@@ -1,73 +1,55 @@
 // Importamos los hooks.
-import { useContext, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useForm, FormProvider } from 'react-hook-form';
 import { Navigate, useNavigate } from 'react-router-dom';
-import useFetch from '../hooks/useFetch';
 
-// Importamos el contexto de autenticación.
-import { AuthContext } from '../contexts/AuthContext';
+// Importamos los componentes.
+import Input from '../components/Input';
 
-// Importamos librerías externas.
-import toast from 'react-hot-toast';
-
-// Importamos las variables de entorno.
-const { VITE_API_URL } = import.meta.env;
+// Importamos la acción de Redux para crear un jugador del slice unificado de players.
+import { createPlayer } from '../redux/slices/playerSlice';
 
 // Inicializamos el componente.
 const CreatePlayerPage = () => {
-    // Extraemos valores del contexto de autenticación.
-    const { authToken, authUser } = useContext(AuthContext);
+    // Inicializamos el hook de Redux para enviar acciones.
+    const dispatch = useDispatch();
 
     // Inicializamos el hook de navegación.
     const navigate = useNavigate();
 
-    // Estado local para almacenar los valores del formulario.
-    const [formValues, setFormValues] = useState({
-        firstName: '',
-        lastName: '',
-        birthDate: '',
-        position: '',
-        skills: '',
-        team: '',
-        strongFoot: '',
+    // Extraemos authToken y authUser desde Redux.
+    const { authToken, authUser } = useSelector((state) => state.auth);
+
+    // Extraemos el estado de creación de jugador desde el slice de players.
+    const { loading } = useSelector((state) => state.players);
+
+    // Configuración del formulario con react-hook-form.
+    const methods = useForm({
+        defaultValues: {
+            firstName: '',
+            lastName: '',
+            birthDate: '',
+            position: '',
+            skills: '',
+            team: '',
+            strongFoot: '',
+        },
     });
-
-    // Extraemos valores del hook `useFetch`.
-    const { fetchData, loading } = useFetch();
-
-    // Función genérica para manejar cambios en los inputs del formulario.
-    const handleChange = (e) => {
-        // Extraemos el nombre y valor del input.
-        const { name, value } = e.target;
-
-        // Actualizamos el estado con el nuevo valor del input.
-        setFormValues({
-            ...formValues,
-            [name]: value,
-        });
-    };
+    const { handleSubmit } = methods;
 
     // Función que maneja el envío del formulario.
-    const handleAddPlayer = async (e) => {
-        // Prevenimos la recarga de la página.
-        e.preventDefault();
-
-        // Realizamos la petición y obtenemos el body.
-        const body = await fetchData({
-            url: `${VITE_API_URL}/api/players`,
-            method: 'POST',
-            body: formValues,
-            authToken,
-            toastId: 'createPlayerPage',
-        });
-
-        // Si la respuesta es válida, mostramos un mensaje y redirigimos a la página principal.
-        if (body) {
-            toast.success(body.message, { id: 'createPlayerPage' });
-            navigate('/');
-        }
+    const onSubmit = (data) => {
+        dispatch(createPlayer({ formValues: data, authToken })).then(
+            (action) => {
+                // Si la creación fue exitosa, redirigimos a la página principal.
+                if (createPlayer.fulfilled.match(action)) {
+                    navigate('/');
+                }
+            },
+        );
     };
 
-    // Si el usuario no está autenticado o no tiene rol de 'family', lo redirigimos a la página de inicio.
+    // Si el usuario no está autenticado o no tiene rol 'family', lo redirigimos a la página de inicio.
     if (!authUser || authUser.role !== 'family') {
         return <Navigate to="/" />;
     }
@@ -75,111 +57,114 @@ const CreatePlayerPage = () => {
     return (
         <main>
             <h2>Página de creación de jugador</h2>
-
-            {/* Formulario de creación de jugador. */}
-            <form onSubmit={handleAddPlayer}>
-                {/* Campo nombre. */}
-                <label htmlFor="firstName">Nombre:</label>
-                <input
-                    type="text"
-                    id="firstName"
-                    name="firstName"
-                    value={formValues.firstName}
-                    onChange={handleChange}
-                    autoFocus
-                    required
-                />
-
-                {/* Campo apellidos. */}
-                <label htmlFor="lastName">Apellidos:</label>
-                <input
-                    type="text"
-                    id="lastName"
-                    name="lastName"
-                    value={formValues.lastName}
-                    onChange={handleChange}
-                    required
-                />
-
-                {/* Campo fecha de nacimiento. */}
-                <label htmlFor="birthDate">Fecha de nacimiento:</label>
-                <input
-                    type="date"
-                    id="birthDate"
-                    name="birthDate"
-                    value={formValues.birthDate}
-                    onChange={handleChange}
-                    required
-                />
-
-                {/* Campo posición. */}
-                <label htmlFor="position">Posición:</label>
-                <input
-                    type="text"
-                    id="position"
-                    name="position"
-                    value={formValues.position}
-                    onChange={handleChange}
-                    required
-                />
-
-                {/* Campo habilidades. */}
-                <label htmlFor="skills">Habilidades:</label>
-                <textarea
-                    name="skills"
-                    id="skills"
-                    value={formValues.skills}
-                    onChange={handleChange}
-                ></textarea>
-
-                {/* Campo equipo. */}
-                <label htmlFor="team">Equipo:</label>
-                <input
-                    type="text"
-                    id="team"
-                    name="team"
-                    value={formValues.team}
-                    onChange={handleChange}
-                />
-
-                {/* Selección de pierna dominante. */}
-                <fieldset>
-                    <legend>Pierna dominante</legend>
-
-                    <input
-                        type="radio"
-                        id="leftFoot"
-                        name="strongFoot"
-                        value="izquierda"
-                        onChange={handleChange}
+            {/* Utilizamos FormProvider para proporcionar los métodos de react-hook-form a los inputs */}
+            <FormProvider {...methods}>
+                <form onSubmit={handleSubmit(onSubmit)}>
+                    {/* Campo Nombre */}
+                    <Input
+                        label="Nombre"
+                        name="firstName"
+                        type="text"
+                        autoComplete="given-name"
+                        aria-label="Nombre"
                         required
                     />
-                    <label htmlFor="leftFoot">Pierna izquierda</label>
-
-                    <input
-                        type="radio"
-                        id="rightFoot"
-                        name="strongFoot"
-                        value="derecha"
-                        onChange={handleChange}
+                    {/* Campo Apellidos */}
+                    <Input
+                        label="Apellidos"
+                        name="lastName"
+                        type="text"
+                        autoComplete="family-name"
+                        aria-label="Apellidos"
                         required
                     />
-                    <label htmlFor="rightFoot">Pierna derecha</label>
-
-                    <input
-                        type="radio"
-                        id="dualFoot"
-                        name="strongFoot"
-                        value="ambidiestro"
-                        onChange={handleChange}
+                    {/* Campo Fecha de nacimiento (usamos input nativo para fecha) */}
+                    <div className="input-group">
+                        <label htmlFor="birthDate">Fecha de nacimiento:</label>
+                        <input
+                            id="birthDate"
+                            type="date"
+                            {...methods.register('birthDate', {
+                                required: true,
+                            })}
+                            autoComplete="bday"
+                            aria-label="Fecha de nacimiento"
+                            required
+                        />
+                    </div>
+                    {/* Campo Posición */}
+                    <Input
+                        label="Posición"
+                        name="position"
+                        type="text"
+                        autoComplete="off"
+                        aria-label="Posición"
                         required
                     />
-                    <label htmlFor="dualFoot">Ambidiestro</label>
-                </fieldset>
-
-                {/* Botón de envío del formulario. */}
-                <button disabled={loading}>Crear jugador</button>
-            </form>
+                    {/* Campo Habilidades (usamos un textarea nativo) */}
+                    <div className="input-group">
+                        <label htmlFor="skills">Habilidades:</label>
+                        <textarea
+                            id="skills"
+                            {...methods.register('skills')}
+                            aria-label="Habilidades"
+                        ></textarea>
+                    </div>
+                    {/* Campo Equipo */}
+                    <Input
+                        label="Equipo"
+                        name="team"
+                        type="text"
+                        autoComplete="off"
+                        aria-label="Equipo"
+                    />
+                    {/* Selección de Pierna dominante (usamos inputs nativos para radio) */}
+                    <fieldset>
+                        <legend>Pierna dominante</legend>
+                        <div className="input-group">
+                            <input
+                                type="radio"
+                                id="leftFoot"
+                                value="izquierda"
+                                {...methods.register('strongFoot', {
+                                    required: true,
+                                })}
+                            />
+                            <label htmlFor="leftFoot">Pierna izquierda</label>
+                        </div>
+                        <div className="input-group">
+                            <input
+                                type="radio"
+                                id="rightFoot"
+                                value="derecha"
+                                {...methods.register('strongFoot', {
+                                    required: true,
+                                })}
+                            />
+                            <label htmlFor="rightFoot">Pierna derecha</label>
+                        </div>
+                        <div className="input-group">
+                            <input
+                                type="radio"
+                                id="dualFoot"
+                                value="ambidiestro"
+                                {...methods.register('strongFoot', {
+                                    required: true,
+                                })}
+                            />
+                            <label htmlFor="dualFoot">Ambidiestro</label>
+                        </div>
+                    </fieldset>
+                    {/* Botón de envío del formulario */}
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        aria-disabled={loading}
+                    >
+                        Crear jugador
+                    </button>
+                </form>
+            </FormProvider>
         </main>
     );
 };

@@ -1,166 +1,129 @@
 // Importamos los hooks.
-import { useContext, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import useFetch from '../hooks/useFetch';
-import usePlayer from '../hooks/usePlayer';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useParams, Link, Navigate } from 'react-router-dom';
 
-// Importamos el contexto de autenticación.
-import { AuthContext } from '../contexts/AuthContext';
+// Importamos las acciones de Redux.
+import {
+    fetchPlayerById,
+    addPlayerVideo,
+    sendHiringRequest,
+} from '../redux/slices/playerSlice';
+
+// Importamos los componentes.
+import Avatar from '../components/Avatar';
+import YoutubeEmbed from '../components/YoutubeEmbed';
 
 // Importamos funciones auxiliares.
 import { differenceInYears } from 'date-fns';
 
-// Importamos los componentes.
-import { Link } from 'react-router-dom';
-import Avatar from '../components/Avatar';
-import YoutubeEmbed from '../components/YoutubeEmbed';
-
-// Importamos librerías externas.
-import toast from 'react-hot-toast';
-
-// Importamos las variables de entorno.
-const { VITE_API_URL } = import.meta.env;
-
-// Inicializamos el componente.
 const PlayerDetailsPage = () => {
-    // Extraemos valores del contexto de autenticación.
-    const { authToken, authUser } = useContext(AuthContext);
-
     // Extraemos parámetros de la URL.
     const { playerId } = useParams();
 
-    // Extraemos valores del hook `usePlayer`.
-    const { player, addPlayerVideoState } = usePlayer(playerId);
+    // Inicializamos el hook de Redux para enviar acciones.
+    const dispatch = useDispatch();
+
+    // Obtenemos authToken y authUser desde el estado de Redux.
+    const { authToken, authUser } = useSelector((state) => state.auth);
+
+    // Obtenemos el jugador actual y el estado de carga del slice de jugadores.
+    const { currentPlayer: player, loading } = useSelector(
+        (state) => state.players,
+    );
 
     // Estado local para almacenar la URL del video.
     const [url, setUrl] = useState('');
 
-    // Extraemos valores del hook `useFetch`.
-    const { fetchData, loading } = useFetch();
+    // Al montar el componente, obtenemos el jugador por ID si aún no está cargado.
+    useEffect(() => {
+        if (!player || player.id !== Number(playerId)) {
+            dispatch(fetchPlayerById(playerId));
+        }
+    }, [dispatch, player, playerId]);
 
     // Función que maneja el envío del formulario para añadir un video.
     const handleAddVideo = async (e) => {
-        // Prevenimos la recarga de la página.
         e.preventDefault();
-
-        // Realizamos la petición y obtenemos el body.
-        const body = await fetchData({
-            url: `${VITE_API_URL}/api/players/${playerId}/videos`,
-            method: 'POST',
-            body: { url },
-            authToken,
-            toastId: 'playersDetailsPage',
-        });
-
-        // Si la respuesta es válida, actualizamos el estado y mostramos un mensaje.
-        if (body) {
-            addPlayerVideoState(body.data.video);
-            toast.success(body.message, { id: 'playerDetailsPage' });
-        }
+        dispatch(addPlayerVideo({ playerId, url, authToken }));
+        setUrl('');
     };
 
     // Función que maneja el envío de la solicitud de contratación.
-    const handleSendHiringRequest = async () => {
-        // Realizamos la petición y obtenemos el body.
-        const body = await fetchData({
-            url: `${VITE_API_URL}/api/players/${playerId}/hirings`,
-            method: 'POST',
-            authToken,
-            toastId: 'playerDetailsPage',
-        });
-
-        // Si la respuesta es válida, mostramos un mensaje.
-        if (body) {
-            toast.success(body.message, { id: 'playerDetailsPage' });
-        }
+    const handleSendHiringRequest = () => {
+        dispatch(sendHiringRequest({ playerId, authToken }));
     };
+
+    // Si el usuario no está autenticado, redirigimos a la página principal.
+    if (!authUser) return <Navigate to="/" />;
+
+    // Si aún no se ha cargado el jugador, mostramos un indicador de carga.
+    if (!player) return <div>Cargando...</div>;
 
     return (
         <main>
-            {/* Verificamos que `player` existe antes de renderizar. */}
-            {player && (
-                <>
-                    <h2>
-                        Página de detalles del jugador {player.firstName}{' '}
-                        {player.lastName}
-                    </h2>
+            <h2>
+                Página de detalles del jugador {player.firstName}{' '}
+                {player.lastName}
+            </h2>
 
-                    {/* Avatar del jugador. */}
-                    <Avatar avatar={player.avatar} username={player.owner} />
+            {/* Avatar del jugador. */}
+            <Avatar avatar={player.avatar} username={player.owner} />
 
-                    {
-                        // Si estamos logueados y somos dueños del jugador mostramos el botón de editar.
-                        authUser && authUser.id === player.familyUserId && (
-                            <Link
-                                className="edit-player-btn"
-                                to={`/players/${playerId}/edit`}
-                            >
-                                Editar Jugador
-                            </Link>
-                        )
-                    }
-
-                    {
-                        // Si estamos logueados y somos ojeadores mostramos el botón de solicitar contratación.
-                        authUser && authUser.role === 'scout' && (
-                            <button
-                                onClick={handleSendHiringRequest}
-                                disabled={loading}
-                            >
-                                Solicitud de contacto
-                            </button>
-                        )
-                    }
-
-                    {/* Lista de información del jugador. */}
-                    <ul>
-                        <li>
-                            Nombre: {player.firstName} {player.lastName}
-                        </li>
-                        <li>
-                            Edad:{' '}
-                            {differenceInYears(new Date(), player.birthDate)}{' '}
-                            años
-                        </li>
-                        <li>Posición: {player.position}</li>
-                        <li>Habilidades: {player.skills}</li>
-                        <li>Equipo: {player.team}</li>
-                        <li>Pierna dominante: {player.strongFoot}</li>
-                    </ul>
-
-                    {
-                        // Si estamos logueados y somos dueños del jugador mostramos el formulario.
-                        authUser && authUser.id === player.familyUserId && (
-                            <form onSubmit={handleAddVideo}>
-                                <label htmlFor="video">Vídeo de YouTube:</label>
-                                <input
-                                    type="url"
-                                    name="video"
-                                    id="video"
-                                    value={url}
-                                    onChange={(e) => setUrl(e.target.value)}
-                                    autoFocus
-                                    required
-                                />
-
-                                <button disabled={loading}>Añadir</button>
-                            </form>
-                        )
-                    }
-
-                    {/* Lista de vídeos asociados al jugador. */}
-                    <ul>
-                        {player.videos.map((video) => {
-                            return (
-                                <YoutubeEmbed
-                                    key={video.id}
-                                    youtubeId={video.youtubeId}
-                                />
-                            );
-                        })}
-                    </ul>
-                </>
+            {/* Botón de edición: se muestra si el usuario autenticado es el dueño del jugador. */}
+            {authUser && authUser.id === player.familyUserId && (
+                <Link
+                    className="edit-player-btn"
+                    to={`/players/${playerId}/edit`}
+                >
+                    Editar Jugador
+                </Link>
             )}
+
+            {/* Botón de contratación: se muestra si el usuario tiene el rol de 'scout'. */}
+            {authUser && authUser.role === 'scout' && (
+                <button onClick={handleSendHiringRequest} disabled={loading}>
+                    Solicitud de contacto
+                </button>
+            )}
+
+            {/* Lista de información del jugador. */}
+            <ul>
+                <li>
+                    Nombre: {player.firstName} {player.lastName}
+                </li>
+                <li>
+                    Edad: {differenceInYears(new Date(), player.birthDate)} años
+                </li>
+                <li>Posición: {player.position}</li>
+                <li>Habilidades: {player.skills}</li>
+                <li>Equipo: {player.team}</li>
+                <li>Pierna dominante: {player.strongFoot}</li>
+            </ul>
+
+            {/* Formulario para añadir un video (solo visible para el dueño del jugador). */}
+            {authUser && authUser.id === player.familyUserId && (
+                <form onSubmit={handleAddVideo}>
+                    <label htmlFor="video">Vídeo de YouTube:</label>
+                    <input
+                        type="url"
+                        name="video"
+                        id="video"
+                        value={url}
+                        onChange={(e) => setUrl(e.target.value)}
+                        autoFocus
+                        required
+                    />
+                    <button disabled={loading}>Añadir</button>
+                </form>
+            )}
+
+            {/* Lista de vídeos asociados al jugador. */}
+            <ul>
+                {player.videos.map((video) => (
+                    <YoutubeEmbed key={video.id} youtubeId={video.youtubeId} />
+                ))}
+            </ul>
         </main>
     );
 };

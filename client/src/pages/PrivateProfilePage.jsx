@@ -1,17 +1,18 @@
 // Importamos los hooks.
-import { useEffect, useRef, useState, useContext } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useForm, FormProvider } from 'react-hook-form';
-import useFetch from '../hooks/useFetch';
 
 // Importamos los componentes.
 import { Navigate } from 'react-router-dom';
-
-// Importamos el contexto de autenticación.
-import { AuthContext } from '../contexts/AuthContext';
-
-// Importamos los componentes.
 import Avatar from '../components/Avatar';
 import Input from '../components/Input';
+
+// Importamos las acciones de Redux.
+import { fetchAuthUser } from '../redux/slices/authSlice';
+
+// Importamos los hooks personalizados.
+import useFetch from '../hooks/useFetch';
 
 // Importamos las variables de entorno.
 const { VITE_API_URL } = import.meta.env;
@@ -32,7 +33,7 @@ const updateField = async (
     getValues,
     fetchData,
     authToken,
-    authUpdateProfileState,
+    dispatch,
     setEditingField,
 ) => {
     const value = getValues(field);
@@ -49,18 +50,13 @@ const updateField = async (
     });
 
     if (body?.status === 'ok') {
-        authUpdateProfileState(body.data.user);
+        dispatch(fetchAuthUser(authToken));
         setEditingField(null);
     }
 };
 
 // Función para subir el avatar.
-const uploadAvatar = async (
-    event,
-    fetchData,
-    authToken,
-    authUpdateProfileState,
-) => {
+const uploadAvatar = async (event, fetchData, authToken, dispatch) => {
     const file = event.target.files[0];
     if (!file) return;
 
@@ -77,15 +73,17 @@ const uploadAvatar = async (
     });
 
     if (body?.status === 'ok') {
-        authUpdateProfileState(body.data.user);
+        dispatch(fetchAuthUser(authToken));
     }
 };
 
 // Inicializamos el componente.
 const PrivateProfilePage = () => {
-    // Extraemos valores del contexto de autenticación.
-    const { authToken, authUser, authUpdateProfileState } =
-        useContext(AuthContext);
+    // Inicializamos el hook de Redux para enviar acciones.
+    const dispatch = useDispatch();
+
+    // Extraemos valores del estado de autenticación desde Redux.
+    const { authToken, authUser } = useSelector((state) => state.auth);
 
     // Extraemos valores del hook `useFetch`.
     const { fetchData, loading } = useFetch();
@@ -135,12 +133,7 @@ const PrivateProfilePage = () => {
                             ref={fileInputRef}
                             accept="image/*"
                             onChange={(e) =>
-                                uploadAvatar(
-                                    e,
-                                    fetchData,
-                                    authToken,
-                                    authUpdateProfileState,
-                                )
+                                uploadAvatar(e, fetchData, authToken, dispatch)
                             }
                             // Ocultamos el input de subida de archivos.
                             style={{ display: 'none' }}
@@ -168,7 +161,7 @@ const PrivateProfilePage = () => {
                                         getValues,
                                         fetchData,
                                         authToken,
-                                        authUpdateProfileState,
+                                        dispatch,
                                         setEditingField,
                                     )
                                 }
@@ -205,7 +198,7 @@ const PrivateProfilePage = () => {
                                         getValues,
                                         fetchData,
                                         authToken,
-                                        authUpdateProfileState,
+                                        dispatch,
                                         setEditingField,
                                     )
                                 }

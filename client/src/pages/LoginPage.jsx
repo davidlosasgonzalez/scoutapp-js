@@ -1,59 +1,46 @@
 // Importamos los hooks.
-import { useState, useContext } from 'react';
-import useFetch from '../hooks/useFetch';
+import { useDispatch, useSelector } from 'react-redux';
+import { useForm, FormProvider } from 'react-hook-form';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 // Importamos los componentes.
-import { Navigate } from 'react-router-dom';
+import Input from '../components/Input';
 
-// Importamos el contexto de autenticación.
-import { AuthContext } from '../contexts/AuthContext';
+// Importamos las acciones de Redux.
+import { loginUser } from '../redux/slices/authSlice';
 
-// Importamos las variables de entorno.
-const { VITE_API_URL } = import.meta.env;
+// Importamos librerías externas.
+import toast from 'react-hot-toast';
 
 // Inicializamos el componente.
 const LoginPage = () => {
-    // Extraemos valores del contexto de autenticación.
-    const { authUser, authLoginState } = useContext(AuthContext);
+    // Inicializamos el hook de Redux para enviar acciones.
+    const dispatch = useDispatch();
 
-    // Estado local para almacenar los valores del formulario.
-    const [formValues, setFormValues] = useState({
-        email: '',
-        password: '',
+    // Inicializamos el hook de navegación.
+    const navigate = useNavigate();
+
+    // Extraemos valores del estado de autenticación desde Redux.
+    const { authUser, loading } = useSelector((state) => state.auth);
+
+    // Configuración del formulario con `react-hook-form`.
+    const methods = useForm({
+        defaultValues: {
+            email: '',
+            password: '',
+        },
     });
 
-    // Extraemos valores del hook `useFetch`.
-    const { fetchData, loading } = useFetch();
-
-    // Función genérica para manejar cambios en los inputs del formulario.
-    const handleChange = (e) => {
-        // Extraemos el nombre y valor del input.
-        const { name, value } = e.target;
-
-        // Actualizamos el estado con el nuevo valor del input.
-        setFormValues({
-            ...formValues,
-            [name]: value,
-        });
-    };
+    // Extraemos el método handleSubmit.
+    const { handleSubmit } = methods;
 
     // Función que maneja el envío del formulario.
-    const handleLoginUser = async (e) => {
-        // Prevenimos la recarga de la página.
-        e.preventDefault();
+    const onSubmit = async (data) => {
+        const action = await dispatch(loginUser(data));
 
-        // Realizamos la petición y obtenemos el body.
-        const body = await fetchData({
-            url: `${VITE_API_URL}/api/users/login`,
-            method: 'POST',
-            body: formValues,
-            toastId: 'loginPage',
-            showToast: false,
-        });
-
-        // Si la respuesta es válida, actualizamos el estado de autenticación.
-        if (body) {
-            authLoginState(body.data.token);
+        if (loginUser.fulfilled.match(action)) {
+            toast.success('Inicio de sesión exitoso', { id: 'loginPage' });
+            navigate('/');
         }
     };
 
@@ -66,36 +53,37 @@ const LoginPage = () => {
         <main>
             <h2>Página de login</h2>
 
-            {/* Formulario de autenticación. */}
-            <form onSubmit={handleLoginUser}>
-                {/* Campo email. */}
-                <label htmlFor="email">Email:</label>
-                <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    autoComplete="email"
-                    value={formValues.email}
-                    onChange={handleChange}
-                    autoFocus
-                    required
-                />
-
-                {/* Campo contraseña. */}
-                <label htmlFor="password">Contraseña:</label>
-                <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    autoComplete="new-password"
-                    value={formValues.password}
-                    onChange={handleChange}
-                    required
-                />
-
-                {/* Botón de envío del formulario. */}
-                <button disabled={loading}>Loguearse</button>
-            </form>
+            {/* Utilizamos FormProvider para proporcionar los métodos de react-hook-form */}
+            <FormProvider {...methods}>
+                <form onSubmit={handleSubmit(onSubmit)}>
+                    {/* Campo email. */}
+                    <Input
+                        label="Email"
+                        name="email"
+                        type="email"
+                        autoComplete="email"
+                        aria-label="Correo electrónico"
+                        required
+                    />
+                    {/* Campo contraseña. */}
+                    <Input
+                        label="Contraseña"
+                        name="password"
+                        type="password"
+                        autoComplete="current-password"
+                        aria-label="Contraseña"
+                        required
+                    />
+                    {/* Botón de envío del formulario. */}
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        aria-disabled={loading}
+                    >
+                        Loguearse
+                    </button>
+                </form>
+            </FormProvider>
         </main>
     );
 };

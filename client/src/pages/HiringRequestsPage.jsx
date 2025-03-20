@@ -1,132 +1,108 @@
 // Importamos los hooks.
-import { useContext } from 'react';
-import useHiringList from '../hooks/useHiringList';
-import useFetch from '../hooks/useFetch';
-
-// Importamos los componentes.
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Navigate } from 'react-router-dom';
 
-// Importamos el contexto de autenticación.
-import { AuthContext } from '../contexts/AuthContext';
-
-// Importamos librerías externas.
-import toast from 'react-hot-toast';
-
-// Importamos las variables de entorno.
-const { VITE_API_URL } = import.meta.env;
+// Importamos las acciones de Redux.
+import {
+    fetchHiringRequests,
+    updateHiringRequest,
+} from '../redux/slices/playerSlice';
 
 // Inicializamos el componente.
 const HiringRequestPage = () => {
-    // Extraemos valores del contexto de autenticación.
-    const { authToken, authUser } = useContext(AuthContext);
+    // Obtenemos authToken y authUser desde el estado de Redux.
+    const { authToken, authUser } = useSelector((state) => state.auth);
 
-    // Extraemos valores del hook `useHiringList`.
-    const { hiringRequests, updateHiringState } = useHiringList(authToken);
+    // Obtenemos la lista de solicitudes y el estado de carga del slice de jugadores.
+    const { hiringRequests, loading } = useSelector((state) => state.players);
 
-    // Extraemos valores del hook `useFetch`.
-    const { fetchData, loading } = useFetch();
+    // Inicializamos el hook de Redux para enviar acciones.
+    const dispatch = useDispatch();
 
-    // Función que maneja el click de los botones de aceptar o rechazar.
-    const handleHiringRequest = async (e, playerId, hiringId) => {
-        // Determinamos el nuevo estado de la solicitud en función del botón presionado.
+    // Al montar el componente, obtenemos la lista de solicitudes de contratación.
+    useEffect(() => {
+        if (authToken) {
+            dispatch(fetchHiringRequests());
+        }
+    }, [dispatch, authToken]);
+
+    // Función que maneja el click de los botones para aceptar o rechazar.
+    const handleHiringRequest = (e, playerId, hiringId) => {
         const newStatus =
             e.currentTarget.textContent === '✅' ? 'aceptada' : 'rechazada';
-
-        // Realizamos la petición y obtenemos el body.
-        const body = await fetchData({
-            url: `${VITE_API_URL}/api/players/${playerId}/hirings/${hiringId}`,
-            method: 'PUT',
-            body: { newStatus },
-            authToken,
-            toastId: 'hiringRequestsPage',
-        });
-
-        // Si la respuesta es válida, actualizamos el estado y mostramos un mensaje.
-        if (body) {
-            updateHiringState(newStatus, hiringId);
-            toast.success(body.message, { id: 'hiringRequestPage' });
-        }
+        dispatch(
+            updateHiringRequest({ playerId, hiringId, newStatus, authToken }),
+        );
     };
 
-    // Si el usuario no está autenticado, lo redirigimos a la página de inicio.
-    if (!authUser) {
-        return <Navigate to="/" />;
-    }
+    // Si el usuario no está autenticado, lo redirigimos a la página principal.
+    if (!authUser) return <Navigate to="/" />;
 
     return (
         <main className="hiring-request-page">
-            {/* Lista de solicitudes de contratación. */}
             <ul>
                 {hiringRequests.length > 0 ? (
-                    hiringRequests.map((request) => {
-                        return (
-                            <li key={request.id}>
-                                <ul>
-                                    {/* Información del jugador. */}
-                                    <li>
-                                        Jugador: {request.playerFirstName}{' '}
-                                        {request.playerLastName}
-                                    </li>
-
-                                    {authUser.role === 'scout' ? (
-                                        <>
-                                            {/* Información del familiar si el usuario es un ojeador. */}
-                                            <li>
-                                                Familiar:{' '}
-                                                {request.familyUsername}
-                                            </li>
-
-                                            {request.status === 'aceptada' && (
-                                                <li>
-                                                    Contacto:{' '}
-                                                    {request.familyEmail}
-                                                </li>
-                                            )}
-                                        </>
-                                    ) : (
-                                        // Información del ojeador si el usuario es un familiar.
+                    hiringRequests.map((request) => (
+                        <li key={request.id}>
+                            <ul>
+                                {/* Información del jugador */}
+                                <li>
+                                    Jugador: {request.playerFirstName}{' '}
+                                    {request.playerLastName}
+                                </li>
+                                {authUser.role === 'scout' ? (
+                                    <>
+                                        {/* Información del familiar si el usuario es un ojeador */}
                                         <li>
-                                            Ojeador: {request.scoutUsername}
+                                            Familiar: {request.familyUsername}
                                         </li>
-                                    )}
-
-                                    {/* Estado de la solicitud y botones de acción. */}
-                                    <li>
-                                        Estado solicitud: {request.status}{' '}
-                                        {request.status === 'pendiente' &&
-                                            authUser?.role === 'family' && (
-                                                <>
-                                                    <button
-                                                        onClick={(e) =>
-                                                            handleHiringRequest(
-                                                                e,
-                                                                request.playerId,
-                                                                request.id,
-                                                            )
-                                                        }
-                                                        disabled={loading}
-                                                    >
-                                                        ❌
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) =>
-                                                            handleHiringRequest(
-                                                                e,
-                                                                request.playerId,
-                                                                request.id,
-                                                            )
-                                                        }
-                                                        disabled={loading}
-                                                    >
-                                                        ✅
-                                                    </button>
-                                                </>
-                                            )}
-                                    </li>
-                                </ul>
-                            </li>
-                        );
-                    })
+                                        {request.status === 'aceptada' && (
+                                            <li>
+                                                Contacto: {request.familyEmail}
+                                            </li>
+                                        )}
+                                    </>
+                                ) : (
+                                    // Información del ojeador si el usuario es un familiar.
+                                    <li>Ojeador: {request.scoutUsername}</li>
+                                )}
+                                {/* Estado de la solicitud y botones de acción */}
+                                <li>
+                                    Estado solicitud: {request.status}{' '}
+                                    {request.status === 'pendiente' &&
+                                        authUser?.role === 'family' && (
+                                            <>
+                                                <button
+                                                    onClick={(e) =>
+                                                        handleHiringRequest(
+                                                            e,
+                                                            request.playerId,
+                                                            request.id,
+                                                        )
+                                                    }
+                                                    disabled={loading}
+                                                >
+                                                    ❌
+                                                </button>
+                                                <button
+                                                    onClick={(e) =>
+                                                        handleHiringRequest(
+                                                            e,
+                                                            request.playerId,
+                                                            request.id,
+                                                        )
+                                                    }
+                                                    disabled={loading}
+                                                >
+                                                    ✅
+                                                </button>
+                                            </>
+                                        )}
+                                </li>
+                            </ul>
+                        </li>
+                    ))
                 ) : (
                     <li>No se han encontrado solicitudes de contratación</li>
                 )}

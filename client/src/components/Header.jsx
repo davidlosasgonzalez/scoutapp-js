@@ -1,17 +1,20 @@
 // Importamos los hooks.
-import { useContext } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 
 // Importamos los componentes.
 import { Link } from 'react-router-dom';
 import Avatar from './Avatar';
 
-// Importamos el contexto de autenticación.
-import { AuthContext } from '../contexts/AuthContext';
+// Importamos las acciones de Redux.
+import { logoutUser } from '../redux/slices/authSlice';
 
 // Inicializamos el componente.
 const Header = () => {
-    // Extraemos valores del contexto de autenticación.
-    const { authUser, authLogoutState } = useContext(AuthContext);
+    // Extraemos valores del estado de autenticación desde Redux.
+    const { authUser } = useSelector((state) => state.auth);
+
+    // Inicializamos el hook de Redux para enviar acciones.
+    const dispatch = useDispatch();
 
     return (
         <header>
@@ -69,7 +72,7 @@ const Header = () => {
 
                             {/* Botón para cerrar sesión. */}
                             <li>
-                                <button onClick={authLogoutState}>
+                                <button onClick={() => dispatch(logoutUser())}>
                                     Cerrar Sesión
                                 </button>
                             </li>
@@ -81,4 +84,5 @@ const Header = () => {
     );
 };
 
+// Exportamos el componente.
 export default Header;

@@ -1,165 +1,161 @@
 // Importamos los hooks.
-import { useContext, useState } from 'react';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useForm, FormProvider } from 'react-hook-form';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
-import usePlayer from '../hooks/usePlayer';
-import useFetch from '../hooks/useFetch';
 
-// Importamos el contexto de autenticación.
-import { AuthContext } from '../contexts/AuthContext';
+// Importamos el componente Input.
+import Input from '../components/Input';
 
-// Importamos librerías externas.
-import toast from 'react-hot-toast';
-
-// Importamos las variables de entorno.
-const { VITE_API_URL } = import.meta.env;
+// Importamos las acciones de Redux para obtener y actualizar un jugador.
+import { fetchPlayerById, updatePlayer } from '../redux/slices/playerSlice';
 
 // Inicializamos el componente.
 const EditPlayerPage = () => {
-    // Extraemos valores del contexto de autenticación.
-    const { authToken, authUser } = useContext(AuthContext);
-
-    // Extraemos parámetros de la URL.
+    // Extraemos playerId de la URL.
     const { playerId } = useParams();
 
-    // Extraemos valores del hook `usePlayer`.
-    const { player } = usePlayer(playerId);
+    // Inicializamos el hook de Redux para enviar acciones.
+    const dispatch = useDispatch();
 
     // Inicializamos el hook de navegación.
     const navigate = useNavigate();
 
-    // Estado local para almacenar los valores del formulario.
-    const [formValues, setFormValues] = useState({
-        position: '',
-        skills: '',
-        team: '',
-        strongFoot: '',
+    // Extraemos authToken y authUser desde Redux.
+    const { authToken, authUser } = useSelector((state) => state.auth);
+
+    // Extraemos el jugador actual y el estado de carga del slice de jugadores.
+    const { currentPlayer: player, loading } = useSelector(
+        (state) => state.players,
+    );
+
+    // Configuración del formulario con react-hook-form.
+    const methods = useForm({
+        defaultValues: {
+            position: '',
+            skills: '',
+            team: '',
+            strongFoot: '',
+        },
     });
 
-    // Extraemos valores del hook `useFetch`.
-    const { fetchData, loading } = useFetch();
+    const { handleSubmit, reset } = methods;
 
-    // Función genérica para manejar cambios en los inputs del formulario.
-    const handleChange = (e) => {
-        // Extraemos el nombre y valor del input.
-        const { name, value } = e.target;
-
-        // Actualizamos el estado con el nuevo valor del input.
-        setFormValues({
-            ...formValues,
-            [name]: value,
-        });
-    };
+    // Al montar el componente, obtenemos el jugador por ID y reiniciamos el formulario con sus datos.
+    useEffect(() => {
+        if (!player || player.id !== Number(playerId)) {
+            dispatch(fetchPlayerById(playerId));
+        } else {
+            // Si el jugador no tiene strongFoot, asignamos un valor por defecto ('left').
+            reset({
+                position: player.position || '',
+                skills: player.skills || '',
+                team: player.team || '',
+                strongFoot: player.strongFoot || '',
+            });
+        }
+    }, [dispatch, player, playerId, reset]);
 
     // Función que maneja el envío del formulario.
-    const handleEditPlayer = async (e) => {
-        // Prevenimos la recarga de la página.
-        e.preventDefault();
+    const onSubmit = async (data) => {
+        const action = await dispatch(
+            updatePlayer({ playerId, formValues: data, authToken }),
+        );
 
-        // Realizamos la petición y obtenemos el body.
-        const body = await fetchData({
-            url: `${VITE_API_URL}/api/players/${playerId}`,
-            method: 'PUT',
-            body: formValues,
-            authToken,
-            toastId: 'editPlayerPage',
-        });
-
-        // Si la respuesta es válida, mostramos un mensaje y redirigimos a la página de detalles del jugador.
-        if (body) {
-            toast.success(body.message, { id: 'editPlayerPage' });
+        if (updatePlayer.fulfilled.match(action)) {
             navigate(`/players/${playerId}`);
         }
     };
 
-    // Si el usuario no está autenticado, lo redirigimos a la página de inicio.
-    if (!authUser) {
+    // Si el usuario no está autenticado, lo redirigimos.
+    if (!authUser) return <Navigate to="/" />;
+
+    // Si el jugador no existe o si el usuario autenticado no es su dueño redirigimos.
+    if (!player || player.familyUserId !== authUser.id)
         return <Navigate to="/" />;
-    }
 
     return (
         <main>
-            {
-                // Si existe el jugador y el ID del usuario que creó el jugador coincide con el ID del usuario autenticado, mostramos el formulario de edición.
-                player && player.familyUserId === authUser.id && (
-                    <>
-                        <h2>
-                            Página de editar jugador: {player.firstName}{' '}
-                            {player.lastName}
-                        </h2>
-
-                        {/* Formulario de edición del jugador. */}
-                        <form onSubmit={handleEditPlayer}>
-                            {/* Campo posición. */}
-                            <label htmlFor="position">Posición:</label>
+            <h2>
+                Página de editar jugador: {player.firstName} {player.lastName}
+            </h2>
+            {/* Proveemos los métodos de react-hook-form a los inputs */}
+            <FormProvider {...methods}>
+                <form onSubmit={handleSubmit(onSubmit)}>
+                    {/* Campo posición */}
+                    <Input
+                        label="Posición"
+                        name="position"
+                        type="text"
+                        autoComplete="off"
+                        aria-label="Posición"
+                        required
+                    />
+                    {/* Campo habilidades (textarea nativo) */}
+                    <div className="input-group">
+                        <label htmlFor="skills">Habilidades:</label>
+                        <textarea
+                            id="skills"
+                            {...methods.register('skills')}
+                            aria-label="Habilidades"
+                        ></textarea>
+                    </div>
+                    {/* Campo equipo */}
+                    <Input
+                        label="Equipo"
+                        name="team"
+                        type="text"
+                        autoComplete="off"
+                        aria-label="Equipo"
+                        required
+                    />
+                    {/* Selección de pierna dominante (inputs nativos para radio) */}
+                    <fieldset>
+                        <legend>Pierna dominante</legend>
+                        <div className="input-group">
                             <input
-                                type="text"
-                                id="position"
-                                name="position"
-                                value={formValues.position}
-                                onChange={handleChange}
+                                type="radio"
+                                id="leftFoot"
+                                value="izquierda"
+                                {...methods.register('strongFoot', {
+                                    required: true,
+                                })}
                             />
-
-                            {/* Campo habilidades. */}
-                            <label htmlFor="skills">Habilidades:</label>
-                            <textarea
-                                name="skills"
-                                id="skills"
-                                value={formValues.skills}
-                                onChange={handleChange}
-                            ></textarea>
-
-                            {/* Campo equipo. */}
-                            <label htmlFor="team">Equipo:</label>
+                            <label htmlFor="leftFoot">Pierna izquierda</label>
+                        </div>
+                        <div className="input-group">
                             <input
-                                type="text"
-                                id="team"
-                                name="team"
-                                value={formValues.team}
-                                onChange={handleChange}
+                                type="radio"
+                                id="rightFoot"
+                                value="derecha"
+                                {...methods.register('strongFoot', {
+                                    required: true,
+                                })}
                             />
-
-                            {/* Selección de pierna dominante. */}
-                            <fieldset>
-                                <legend>Pierna dominante</legend>
-
-                                <input
-                                    type="radio"
-                                    id="leftFoot"
-                                    name="strongFoot"
-                                    value="left"
-                                    onChange={handleChange}
-                                />
-                                <label htmlFor="leftFoot">
-                                    Pierna izquierda
-                                </label>
-
-                                <input
-                                    type="radio"
-                                    id="rightFoot"
-                                    name="strongFoot"
-                                    value="right"
-                                    onChange={handleChange}
-                                />
-                                <label htmlFor="rightFoot">
-                                    Pierna derecha
-                                </label>
-
-                                <input
-                                    type="radio"
-                                    id="dualFoot"
-                                    name="strongFoot"
-                                    value="dual"
-                                    onChange={handleChange}
-                                />
-                                <label htmlFor="dualFoot">Ambidiestro</label>
-                            </fieldset>
-
-                            {/* Botón de envío del formulario. */}
-                            <button disabled={loading}>Editar jugador</button>
-                        </form>
-                    </>
-                )
-            }
+                            <label htmlFor="rightFoot">Pierna derecha</label>
+                        </div>
+                        <div className="input-group">
+                            <input
+                                type="radio"
+                                id="dualFoot"
+                                value="dual"
+                                {...methods.register('strongFoot', {
+                                    required: true,
+                                })}
+                            />
+                            <label htmlFor="dualFoot">Ambidiestro</label>
+                        </div>
+                    </fieldset>
+                    {/* Botón de envío del formulario */}
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        aria-disabled={loading}
+                    >
+                        Editar jugador
+                    </button>
+                </form>
+            </FormProvider>
         </main>
     );
 };
