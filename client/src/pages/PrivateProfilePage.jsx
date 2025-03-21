@@ -9,13 +9,7 @@ import Avatar from '../components/Avatar';
 import Input from '../components/Input';
 
 // Importamos las acciones de Redux.
-import { fetchAuthUser } from '../redux/slices/authSlice';
-
-// Importamos los hooks personalizados.
-import useFetch from '../hooks/useFetch';
-
-// Importamos las variables de entorno.
-const { VITE_API_URL } = import.meta.env;
+import { updateAuthField, uploadAuthAvatar } from '../redux/slices/auth';
 
 // Función para inicializar el formulario con los datos del usuario.
 const initializeForm = (authUser, reset) => {
@@ -27,66 +21,13 @@ const initializeForm = (authUser, reset) => {
     }
 };
 
-// Función para actualizar un campo del usuario.
-const updateField = async (
-    field,
-    getValues,
-    fetchData,
-    authToken,
-    dispatch,
-    setEditingField,
-) => {
-    const value = getValues(field);
-
-    const body = await fetchData({
-        url: `${VITE_API_URL}/api/users`,
-        method: 'PUT',
-        body: { [field]: value },
-        authToken,
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        toastId: 'privateProfilePage',
-    });
-
-    if (body?.status === 'ok') {
-        dispatch(fetchAuthUser(authToken));
-        setEditingField(null);
-    }
-};
-
-// Función para subir el avatar.
-const uploadAvatar = async (event, fetchData, authToken, dispatch) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append('avatar', file);
-
-    const body = await fetchData({
-        url: `${VITE_API_URL}/api/users/avatar`,
-        method: 'PUT',
-        body: formData,
-        authToken,
-        isFormData: true,
-        toastId: 'privateProfilePage',
-    });
-
-    if (body?.status === 'ok') {
-        dispatch(fetchAuthUser(authToken));
-    }
-};
-
 // Inicializamos el componente.
 const PrivateProfilePage = () => {
     // Inicializamos el hook de Redux para enviar acciones.
     const dispatch = useDispatch();
 
     // Extraemos valores del estado de autenticación desde Redux.
-    const { authToken, authUser } = useSelector((state) => state.auth);
-
-    // Extraemos valores del hook `useFetch`.
-    const { fetchData, loading } = useFetch();
+    const { authUser, loading } = useSelector((state) => state.auth);
 
     // Referencia para el input de subida de archivos (avatar).
     const fileInputRef = useRef(null);
@@ -132,9 +73,10 @@ const PrivateProfilePage = () => {
                             type="file"
                             ref={fileInputRef}
                             accept="image/*"
-                            onChange={(e) =>
-                                uploadAvatar(e, fetchData, authToken, dispatch)
-                            }
+                            onChange={(e) => {
+                                const file = e.target.files[0];
+                                if (file) dispatch(uploadAuthAvatar(file));
+                            }}
                             // Ocultamos el input de subida de archivos.
                             style={{ display: 'none' }}
                         />
@@ -155,16 +97,16 @@ const PrivateProfilePage = () => {
                         {editingField === 'username' ? (
                             <button
                                 type="button"
-                                onClick={() =>
-                                    updateField(
-                                        'username',
-                                        getValues,
-                                        fetchData,
-                                        authToken,
-                                        dispatch,
-                                        setEditingField,
-                                    )
-                                }
+                                onClick={() => {
+                                    const value = getValues('username');
+                                    dispatch(
+                                        updateAuthField({
+                                            field: 'username',
+                                            value,
+                                        }),
+                                    );
+                                    setEditingField(null);
+                                }}
                                 disabled={loading}
                             >
                                 Guardar
@@ -192,16 +134,16 @@ const PrivateProfilePage = () => {
                         {editingField === 'email' ? (
                             <button
                                 type="button"
-                                onClick={() =>
-                                    updateField(
-                                        'email',
-                                        getValues,
-                                        fetchData,
-                                        authToken,
-                                        dispatch,
-                                        setEditingField,
-                                    )
-                                }
+                                onClick={() => {
+                                    const value = getValues('email');
+                                    dispatch(
+                                        updateAuthField({
+                                            field: 'email',
+                                            value,
+                                        }),
+                                    );
+                                    setEditingField(null);
+                                }}
                                 disabled={loading}
                             >
                                 Guardar

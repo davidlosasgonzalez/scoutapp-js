@@ -8,7 +8,7 @@ import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import Input from '../components/Input';
 
 // Importamos las acciones de Redux para obtener y actualizar un jugador.
-import { fetchPlayerById, updatePlayer } from '../redux/slices/playerSlice';
+import { fetchPlayerById, updatePlayer } from '../redux/slices/players';
 
 // Inicializamos el componente.
 const EditPlayerPage = () => {

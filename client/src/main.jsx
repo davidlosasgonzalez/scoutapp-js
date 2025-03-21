@@ -10,7 +10,6 @@ import App from './App.jsx';
 
 // Importamos los componentes provider.
 import { Provider } from 'react-redux';
-import { AuthProvider } from './contexts/AuthContext.jsx';
 
 // Importamos el store y el persistor de Redux.
 import { store, persistor } from './redux/store';
@@ -30,10 +29,7 @@ createRoot(document.getElementById('root')).render(
             <PersistGate loading={<div>Cargando...</div>} persistor={persistor}>
                 {/* Envolvemos con BrowserRouter para manejar la navegación */}
                 <BrowserRouter>
-                    {/* Proveedor de autenticación para gestionar el estado del usuario */}
-                    <AuthProvider>
-                        <App />
-                    </AuthProvider>
+                    <App />
                 </BrowserRouter>
             </PersistGate>
         </Provider>

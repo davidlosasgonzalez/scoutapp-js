@@ -8,7 +8,7 @@ import {
     fetchPlayerById,
     addPlayerVideo,
     sendHiringRequest,
-} from '../redux/slices/playerSlice';
+} from '../redux/slices/players';
 
 // Importamos los componentes.
 import Avatar from '../components/Avatar';

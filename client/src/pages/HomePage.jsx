@@ -8,7 +8,7 @@ import PlayerListItem from '../components/PlayerListItem';
 import Input from '../components/Input';
 
 // Importamos la acción de Redux.
-import { fetchPlayers } from '../redux/slices/playerSlice';
+import { fetchPlayers } from '../redux/slices/players';
 
 // Inicializamos el componente.
 const HomePage = () => {

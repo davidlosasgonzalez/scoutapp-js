@@ -7,7 +7,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import Input from '../components/Input';
 
 // Importamos la acción de Redux para crear un jugador del slice unificado de players.
-import { createPlayer } from '../redux/slices/playerSlice';
+import { createPlayer } from '../redux/slices/players';
 
 // Inicializamos el componente.
 const CreatePlayerPage = () => {

@@ -7,7 +7,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import Input from '../components/Input';
 
 // Importamos las acciones de Redux.
-import { loginUser } from '../redux/slices/authSlice';
+import { loginUser } from '../redux/slices/auth';
 
 // Importamos librerías externas.
 import toast from 'react-hot-toast';

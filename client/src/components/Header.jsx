@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import Avatar from './Avatar';
 
 // Importamos las acciones de Redux.
-import { logoutUser } from '../redux/slices/authSlice';
+import { logoutUser } from '../redux/slices/auth';
 
 // Inicializamos el componente.
 const Header = () => {

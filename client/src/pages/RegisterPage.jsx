@@ -7,7 +7,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import Input from '../components/Input';
 
 // Importamos la acción de Redux para registrar un usuario.
-import { registerUser } from '../redux/slices/authSlice';
+import { registerUser } from '../redux/slices/auth';
 
 // Importamos librerías externas.
 import toast from 'react-hot-toast';

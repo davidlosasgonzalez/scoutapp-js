@@ -1,11 +1,11 @@
 // Importamos las herramientas de Redux Toolkit.
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
 
-// Importamos los reducers.
-import authReducer from './slices/authSlice';
-import playerSliceReducer from './slices/playerSlice';
+// Importamos los reducers de los slices modularizados.
+import authReducer from './slices/auth';
+import playersReducer from './slices/players';
 
-// Importamos redux-persist y el storage (utilizamos localStorage para web)
+// Importamos redux-persist y el storage (utilizamos localStorage para web).
 import storage from 'redux-persist/lib/storage';
 import { persistReducer, persistStore } from 'redux-persist';
 
@@ -22,13 +22,13 @@ const persistConfig = {
 // Combinamos nuestros reducers.
 const rootReducer = combineReducers({
     auth: authReducer,
-    players: playerSliceReducer,
+    players: playersReducer,
 });
 
 // Creamos el reducer persistente.
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-// Configuramos el store y deshabilitamos la comprobación de serialización
+// Configuramos el store y deshabilitamos la comprobación de serialización.
 export const store = configureStore({
     reducer: persistedReducer,
     middleware: (getDefaultMiddleware) =>
@@ -37,5 +37,5 @@ export const store = configureStore({
         }),
 });
 
-// Creamos el persistor, encargado de rehidratar el estado al iniciar la app
+// Creamos el persistor, encargado de rehidratar el estado al iniciar la app.
 export const persistor = persistStore(store);

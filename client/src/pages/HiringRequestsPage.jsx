@@ -7,7 +7,7 @@ import { Navigate } from 'react-router-dom';
 import {
     fetchHiringRequests,
     updateHiringRequest,
-} from '../redux/slices/playerSlice';
+} from '../redux/slices/players';
 
 // Inicializamos el componente.
 const HiringRequestPage = () => {
