@@ -1,6 +1,3 @@
-// Importamos variables de entorno desde Vite.
-const { VITE_API_URL } = import.meta.env;
-
 // Función auxiliar para manejar respuestas de la API.
 export const handleApiResponse = async (res) => {
     const body = await res.json();
@@ -15,6 +12,3 @@ export const handleApiResponse = async (res) => {
 
     return body;
 };
-
-// Exportamos también la URL base si hace falta.
-export const API_URL = VITE_API_URL;

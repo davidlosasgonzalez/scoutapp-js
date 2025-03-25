@@ -2,13 +2,14 @@
 import PropTypes from 'prop-types';
 
 // Importamos las variables de entorno.
-const { VITE_API_URL, VITE_DEFAULT_AVATAR } = import.meta.env;
+import { getEnv } from '@/config/env.js';
+const { apiUrl, defaultAvatar } = getEnv();
 
 // Inicializamos el componente.
 const Avatar = ({ avatar, username, onClick, className }) => {
     return (
         <img
-            src={avatar ? `${VITE_API_URL}/${avatar}` : VITE_DEFAULT_AVATAR}
+            src={avatar ? `${apiUrl}/${avatar}` : defaultAvatar}
             alt={username}
             className={`avatar ${className || ''}`}
             // Solo será clickeable si se pasa la prop.

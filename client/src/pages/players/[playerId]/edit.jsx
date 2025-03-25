@@ -1,98 +1,92 @@
 // Importamos los hooks.
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useForm, FormProvider } from 'react-hook-form';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/router';
 
-// Importamos los componentes.
-import Input from '../components/Input';
+// Importamos el componente Input.
+import Input from '@/components/Input';
 
-// Importamos la acción de Redux para crear un jugador del slice unificado de players.
-import { createPlayer } from '../redux/slices/players';
+// Importamos las acciones de Redux para obtener y actualizar un jugador.
+import { fetchPlayerById, updatePlayer } from '@/redux/slices/players';
 
 // Inicializamos el componente.
-const CreatePlayerPage = () => {
+const EditPlayerPage = () => {
+    // Inicializamos el hook de navegación.
+    const router = useRouter();
+
+    // Extraemos playerId de los parámetros de la URL.
+    const { playerId } = router.query;
+
     // Inicializamos el hook de Redux para enviar acciones.
     const dispatch = useDispatch();
-
-    // Inicializamos el hook de navegación.
-    const navigate = useNavigate();
 
     // Extraemos authToken y authUser desde Redux.
     const { authToken, authUser } = useSelector((state) => state.auth);
 
-    // Extraemos el estado de creación de jugador desde el slice de players.
-    const { loading } = useSelector((state) => state.players);
+    // Extraemos el jugador actual y el estado de carga del slice de jugadores.
+    const { currentPlayer: player, loading } = useSelector(
+        (state) => state.players,
+    );
 
     // Configuración del formulario con react-hook-form.
     const methods = useForm({
         defaultValues: {
-            firstName: '',
-            lastName: '',
-            birthDate: '',
             position: '',
             skills: '',
             team: '',
             strongFoot: '',
         },
     });
-    const { handleSubmit } = methods;
+
+    const { handleSubmit, reset } = methods;
+
+    // Al montar el componente, obtenemos el jugador por ID y reiniciamos el formulario con sus datos.
+    useEffect(() => {
+        if (playerId) {
+            if (!player || player.id !== Number(playerId)) {
+                dispatch(fetchPlayerById(playerId));
+            } else {
+                reset({
+                    position: player.position || '',
+                    skills: player.skills || '',
+                    team: player.team || '',
+                    strongFoot: player.strongFoot || '',
+                });
+            }
+        }
+    }, [dispatch, player, playerId, reset]);
 
     // Función que maneja el envío del formulario.
-    const onSubmit = (data) => {
-        dispatch(createPlayer({ formValues: data, authToken })).then(
-            (action) => {
-                // Si la creación fue exitosa, redirigimos a la página principal.
-                if (createPlayer.fulfilled.match(action)) {
-                    navigate('/');
-                }
-            },
+    const onSubmit = async (data) => {
+        const action = await dispatch(
+            updatePlayer({ playerId, formValues: data, authToken }),
         );
+
+        if (updatePlayer.fulfilled.match(action)) {
+            router.push(`/players/${playerId}`);
+        }
     };
 
-    // Si el usuario no está autenticado o no tiene rol 'family', lo redirigimos a la página de inicio.
-    if (!authUser || authUser.role !== 'family') {
-        return <Navigate to="/" />;
-    }
+    // Redirección si el usuario no está autenticado o no es el dueño.
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            if (!authUser || !player || player.familyUserId !== authUser.id) {
+                router.push('/');
+            }
+        }
+    }, [authUser, player, router]);
 
     return (
         <main>
-            <h2>Página de creación de jugador</h2>
-            {/* Utilizamos FormProvider para proporcionar los métodos de react-hook-form a los inputs */}
+            <h2>
+                Página de editar jugador: {player?.firstName} {player?.lastName}
+            </h2>
+
+            {/* Proveemos los métodos de react-hook-form a los inputs */}
             <FormProvider {...methods}>
                 <form onSubmit={handleSubmit(onSubmit)}>
-                    {/* Campo Nombre */}
-                    <Input
-                        label="Nombre"
-                        name="firstName"
-                        type="text"
-                        autoComplete="given-name"
-                        aria-label="Nombre"
-                        required
-                    />
-                    {/* Campo Apellidos */}
-                    <Input
-                        label="Apellidos"
-                        name="lastName"
-                        type="text"
-                        autoComplete="family-name"
-                        aria-label="Apellidos"
-                        required
-                    />
-                    {/* Campo Fecha de nacimiento (usamos input nativo para fecha) */}
-                    <div className="input-group">
-                        <label htmlFor="birthDate">Fecha de nacimiento:</label>
-                        <input
-                            id="birthDate"
-                            type="date"
-                            {...methods.register('birthDate', {
-                                required: true,
-                            })}
-                            autoComplete="bday"
-                            aria-label="Fecha de nacimiento"
-                            required
-                        />
-                    </div>
-                    {/* Campo Posición */}
+                    {/* Campo posición */}
                     <Input
                         label="Posición"
                         name="position"
@@ -101,7 +95,8 @@ const CreatePlayerPage = () => {
                         aria-label="Posición"
                         required
                     />
-                    {/* Campo Habilidades (usamos un textarea nativo) */}
+
+                    {/* Campo habilidades (textarea nativo) */}
                     <div className="input-group">
                         <label htmlFor="skills">Habilidades:</label>
                         <textarea
@@ -110,15 +105,18 @@ const CreatePlayerPage = () => {
                             aria-label="Habilidades"
                         ></textarea>
                     </div>
-                    {/* Campo Equipo */}
+
+                    {/* Campo equipo */}
                     <Input
                         label="Equipo"
                         name="team"
                         type="text"
                         autoComplete="off"
                         aria-label="Equipo"
+                        required
                     />
-                    {/* Selección de Pierna dominante (usamos inputs nativos para radio) */}
+
+                    {/* Selección de pierna dominante */}
                     <fieldset>
                         <legend>Pierna dominante</legend>
                         <div className="input-group">
@@ -147,7 +145,7 @@ const CreatePlayerPage = () => {
                             <input
                                 type="radio"
                                 id="dualFoot"
-                                value="ambidiestro"
+                                value="dual"
                                 {...methods.register('strongFoot', {
                                     required: true,
                                 })}
@@ -155,13 +153,14 @@ const CreatePlayerPage = () => {
                             <label htmlFor="dualFoot">Ambidiestro</label>
                         </div>
                     </fieldset>
+
                     {/* Botón de envío del formulario */}
                     <button
                         type="submit"
                         disabled={loading}
                         aria-disabled={loading}
                     >
-                        Crear jugador
+                        Editar jugador
                     </button>
                 </form>
             </FormProvider>
@@ -169,4 +168,4 @@ const CreatePlayerPage = () => {
     );
 };
 
-export default CreatePlayerPage;
+export default EditPlayerPage;

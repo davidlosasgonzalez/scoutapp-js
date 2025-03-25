@@ -2,7 +2,8 @@
 import cookies from 'js-cookie';
 
 // Importamos las variables de entorno.
-const { VITE_AUTH_TOKEN } = import.meta.env;
+import { getEnv } from '../../../config/env';
+const { authTokenKey } = getEnv();
 
 // Función auxiliar para manejar respuestas de la API.
 export const handleApiResponse = async (res) => {
@@ -20,15 +21,15 @@ export const handleApiResponse = async (res) => {
 
 // Función para obtener el token desde las cookies.
 export const getTokenFromCookies = () => {
-    return cookies.get(VITE_AUTH_TOKEN) || null;
+    return cookies.get(authTokenKey) || null;
 };
 
 // Función para guardar el token en cookies.
 export const saveTokenToCookies = (token) => {
-    cookies.set(VITE_AUTH_TOKEN, token);
+    cookies.set(authTokenKey, token);
 };
 
 // Función para eliminar el token de cookies.
 export const removeTokenFromCookies = () => {
-    cookies.remove(VITE_AUTH_TOKEN);
+    cookies.remove(authTokenKey);
 };

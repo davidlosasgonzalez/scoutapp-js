@@ -1,16 +1,21 @@
-// Importamos los hooks.
+// Importamos los hooks de React y Redux.
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Navigate } from 'react-router-dom';
+
+// Importamos el hook de navegación de Next.js.
+import { useRouter } from 'next/router';
 
 // Importamos las acciones de Redux.
 import {
     fetchHiringRequests,
     updateHiringRequest,
-} from '../redux/slices/players';
+} from '@/redux/slices/players';
 
 // Inicializamos el componente.
 const HiringRequestPage = () => {
+    // Obtenemos el router para hacer redirecciones.
+    const router = useRouter();
+
     // Obtenemos authToken y authUser desde el estado de Redux.
     const { authToken, authUser } = useSelector((state) => state.auth);
 
@@ -27,17 +32,22 @@ const HiringRequestPage = () => {
         }
     }, [dispatch, authToken]);
 
+    // Redirigimos al usuario a la home si no está autenticado.
+    useEffect(() => {
+        if (typeof window !== 'undefined' && !authUser) {
+            router.push('/');
+        }
+    }, [authUser, router]);
+
     // Función que maneja el click de los botones para aceptar o rechazar.
     const handleHiringRequest = (e, playerId, hiringId) => {
         const newStatus =
             e.currentTarget.textContent === '✅' ? 'aceptada' : 'rechazada';
+
         dispatch(
             updateHiringRequest({ playerId, hiringId, newStatus, authToken }),
         );
     };
-
-    // Si el usuario no está autenticado, lo redirigimos a la página principal.
-    if (!authUser) return <Navigate to="/" />;
 
     return (
         <main className="hiring-request-page">
@@ -51,7 +61,8 @@ const HiringRequestPage = () => {
                                     Jugador: {request.playerFirstName}{' '}
                                     {request.playerLastName}
                                 </li>
-                                {authUser.role === 'scout' ? (
+
+                                {authUser?.role === 'scout' ? (
                                     <>
                                         {/* Información del familiar si el usuario es un ojeador */}
                                         <li>
@@ -67,6 +78,7 @@ const HiringRequestPage = () => {
                                     // Información del ojeador si el usuario es un familiar.
                                     <li>Ojeador: {request.scoutUsername}</li>
                                 )}
+
                                 {/* Estado de la solicitud y botones de acción */}
                                 <li>
                                     Estado solicitud: {request.status}{' '}

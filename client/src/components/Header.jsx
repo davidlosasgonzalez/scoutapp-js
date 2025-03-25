@@ -2,11 +2,11 @@
 import { useSelector, useDispatch } from 'react-redux';
 
 // Importamos los componentes.
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import Avatar from './Avatar';
 
 // Importamos las acciones de Redux.
-import { logoutUser } from '../redux/slices/auth';
+import { logoutUser } from '@/redux/slices/auth';
 
 // Inicializamos el componente.
 const Header = () => {
@@ -20,7 +20,7 @@ const Header = () => {
         <header>
             {/* Logo y enlace a la página principal. */}
             <h1>
-                <Link to="/">ScoutApp</Link>
+                <Link href="/">ScoutApp</Link>
             </h1>
 
             {/* Si el usuario está autenticado, mostramos su información. */}
@@ -43,10 +43,10 @@ const Header = () => {
                         <>
                             {/* Enlaces para usuarios no autenticados. */}
                             <li>
-                                <Link to="/register">Registro</Link>
+                                <Link href="/register">Registro</Link>
                             </li>
                             <li>
-                                <Link to="/login">Login</Link>
+                                <Link href="/login">Login</Link>
                             </li>
                         </>
                     ) : (
@@ -54,7 +54,7 @@ const Header = () => {
                             {/* Enlace para agregar un jugador (solo para `family`). */}
                             {authUser.role === 'family' && (
                                 <li>
-                                    <Link to="/players/create">
+                                    <Link href="/players/create">
                                         Añadir Jugador
                                     </Link>
                                 </li>
@@ -62,12 +62,14 @@ const Header = () => {
 
                             {/* Enlace a las contrataciones. */}
                             <li>
-                                <Link to="/users/hirings">Contrataciones</Link>
+                                <Link href="/users/hirings">
+                                    Contrataciones
+                                </Link>
                             </li>
 
                             {/* Enlace al perfil privado del usuario. */}
                             <li>
-                                <Link to="/users/private">Mi Perfil</Link>
+                                <Link href="/users/profile">Mi Perfil</Link>
                             </li>
 
                             {/* Botón para cerrar sesión. */}

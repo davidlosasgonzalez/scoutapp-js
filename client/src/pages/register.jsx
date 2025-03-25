@@ -1,24 +1,27 @@
 // Importamos los hooks.
 import { useForm, FormProvider } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
-import { Navigate, useNavigate } from 'react-router-dom';
+
+// Importamos el hook de navegación de Next.js.
+import { useRouter } from 'next/router';
 
 // Importamos el componente Input.
-import Input from '../components/Input';
+import Input from '@/components/Input';
 
 // Importamos la acción de Redux para registrar un usuario.
-import { registerUser } from '../redux/slices/auth';
+import { registerUser } from '@/redux/slices/auth';
 
 // Importamos librerías externas.
 import toast from 'react-hot-toast';
+import { useEffect } from 'react';
 
 // Inicializamos el componente.
 const RegisterPage = () => {
     // Inicializamos el hook de Redux para enviar acciones.
     const dispatch = useDispatch();
 
-    // Inicializamos el hook de navegación.
-    const navigate = useNavigate();
+    // Hook de navegación de Next.js.
+    const router = useRouter();
 
     // Extraemos valores del estado de autenticación desde Redux.
     const { authUser, loading } = useSelector((state) => state.auth);
@@ -49,20 +52,28 @@ const RegisterPage = () => {
         const action = await dispatch(registerUser(data));
 
         if (registerUser.fulfilled.match(action)) {
-            navigate('/login');
+            router.push('/login');
         }
     };
 
     // Si el usuario ya está autenticado, lo redirigimos a la página de inicio.
-    if (authUser) return <Navigate to="/" />;
+    useEffect(() => {
+        if (authUser) {
+            router.replace('/');
+        }
+    }, [authUser, router]);
+
+    // Evitamos renderizar si ya está autenticado.
+    if (authUser) return null;
 
     return (
         <main>
             <h2>Página de registro</h2>
+
             {/* Proveemos los métodos de react-hook-form a los inputs */}
             <FormProvider {...methods}>
                 <form onSubmit={handleSubmit(onSubmit)}>
-                    {/* Campo username */}
+                    {/* Campo usuario */}
                     <Input
                         label="Usuario"
                         name="username"
@@ -125,7 +136,7 @@ const RegisterPage = () => {
                         aria-label="Repetir contraseña"
                         required
                     />
-                    {/* Campo rol */}
+                    {/* Campo rol (select) */}
                     <fieldset>
                         <legend>Selecciona tu rol</legend>
                         <label htmlFor="role">Rol:</label>
@@ -154,4 +165,5 @@ const RegisterPage = () => {
     );
 };
 
+// Exportamos el componente.
 export default RegisterPage;

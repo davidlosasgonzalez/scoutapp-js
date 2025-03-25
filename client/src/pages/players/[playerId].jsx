@@ -1,25 +1,30 @@
 // Importamos los hooks.
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useParams, Link, Navigate } from 'react-router-dom';
+import { useRouter } from 'next/router';
 
 // Importamos las acciones de Redux.
 import {
     fetchPlayerById,
     addPlayerVideo,
     sendHiringRequest,
-} from '../redux/slices/players';
+} from '@/redux/slices/players';
 
 // Importamos los componentes.
-import Avatar from '../components/Avatar';
-import YoutubeEmbed from '../components/YoutubeEmbed';
+import Avatar from '@/components/Avatar';
+import YoutubeEmbed from '@/components/YoutubeEmbed';
+import Link from 'next/link';
 
 // Importamos funciones auxiliares.
 import { differenceInYears } from 'date-fns';
 
+// Inicializamos el componente.
 const PlayerDetailsPage = () => {
-    // Extraemos parámetros de la URL.
-    const { playerId } = useParams();
+    // Inicializamos el router de Next.js.
+    const router = useRouter();
+
+    // Extraemos parámetros dinámicos de la URL.
+    const { playerId } = router.query;
 
     // Inicializamos el hook de Redux para enviar acciones.
     const dispatch = useDispatch();
@@ -37,10 +42,17 @@ const PlayerDetailsPage = () => {
 
     // Al montar el componente, obtenemos el jugador por ID si aún no está cargado.
     useEffect(() => {
-        if (!player || player.id !== Number(playerId)) {
+        if (playerId && (!player || player.id !== Number(playerId))) {
             dispatch(fetchPlayerById(playerId));
         }
     }, [dispatch, player, playerId]);
+
+    // Si el usuario no está autenticado, lo redirigimos a la página principal.
+    useEffect(() => {
+        if (typeof window !== 'undefined' && !authUser) {
+            router.replace('/');
+        }
+    }, [authUser, router]);
 
     // Función que maneja el envío del formulario para añadir un video.
     const handleAddVideo = async (e) => {
@@ -54,11 +66,14 @@ const PlayerDetailsPage = () => {
         dispatch(sendHiringRequest({ playerId, authToken }));
     };
 
-    // Si el usuario no está autenticado, redirigimos a la página principal.
-    if (!authUser) return <Navigate to="/" />;
-
     // Si aún no se ha cargado el jugador, mostramos un indicador de carga.
     if (!player) return <div>Cargando...</div>;
+
+    // Calculamos la edad del jugador validando la fecha.
+    const birthDate = new Date(player.birthDate);
+    const age = isNaN(birthDate)
+        ? 'N/D'
+        : differenceInYears(new Date(), birthDate);
 
     return (
         <main>
@@ -73,8 +88,8 @@ const PlayerDetailsPage = () => {
             {/* Botón de edición: se muestra si el usuario autenticado es el dueño del jugador. */}
             {authUser && authUser.id === player.familyUserId && (
                 <Link
+                    href={`/players/${playerId}/edit`}
                     className="edit-player-btn"
-                    to={`/players/${playerId}/edit`}
                 >
                     Editar Jugador
                 </Link>
@@ -92,9 +107,7 @@ const PlayerDetailsPage = () => {
                 <li>
                     Nombre: {player.firstName} {player.lastName}
                 </li>
-                <li>
-                    Edad: {differenceInYears(new Date(), player.birthDate)} años
-                </li>
+                <li>Edad: {age} años</li>
                 <li>Posición: {player.position}</li>
                 <li>Habilidades: {player.skills}</li>
                 <li>Equipo: {player.team}</li>
@@ -128,4 +141,5 @@ const PlayerDetailsPage = () => {
     );
 };
 
+// Exportamos el componente.
 export default PlayerDetailsPage;

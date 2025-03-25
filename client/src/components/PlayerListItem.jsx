@@ -2,8 +2,8 @@
 import PropTypes from 'prop-types';
 
 // Importamos los componentes.
-import { Link } from 'react-router-dom';
-import Avatar from '../components/Avatar';
+import Link from 'next/link';
+import Avatar from '@/components/Avatar';
 
 // Inicializamos el componente.
 const PlayerListItem = ({
@@ -20,7 +20,7 @@ const PlayerListItem = ({
     return (
         <li key={playerId}>
             {/* Enlace a la página de detalles del jugador. */}
-            <Link to={`/players/${playerId}`}>
+            <Link href={`/players/${playerId}`}>
                 {/* Encabezado con el avatar y el nombre del jugador. */}
                 <header>
                     <Avatar avatar={avatar} username={owner} />

@@ -1,6 +1,4 @@
-/* No es necesario añadir CSS para crear nuestra aplicación React, mejor
-   hacerlo al final. Todo el CSS que agrego aquí es para hacer más cómoda
-   la programación, en ningún caso representa el CSS real de mi aplicación. */
+/* CSS básico para facilitar la programación en React. */
 
 label {
     display: block;
@@ -8,6 +6,7 @@ label {
 
 html {
     background-color: rgb(23, 23, 23);
+    color: white;
 }
 
 a {

@@ -1,26 +1,29 @@
-// Importamos los hooks.
+// Importamos los hooks de Redux y React.
 import { useDispatch, useSelector } from 'react-redux';
 import { useForm, FormProvider } from 'react-hook-form';
-import { Navigate, useNavigate } from 'react-router-dom';
 
-// Importamos los componentes.
-import Input from '../components/Input';
+// Importamos el hook de navegación de Next.js.
+import { useRouter } from 'next/router';
+import { useEffect } from 'react';
 
-// Importamos las acciones de Redux.
-import { loginUser } from '../redux/slices/auth';
+// Importamos los componentes personalizados.
+import Input from '@/components/Input';
+
+// Importamos la acción de Redux para iniciar sesión.
+import { loginUser } from '@/redux/slices/auth';
 
 // Importamos librerías externas.
 import toast from 'react-hot-toast';
 
 // Inicializamos el componente.
 const LoginPage = () => {
-    // Inicializamos el hook de Redux para enviar acciones.
+    // Hook de navegación de Next.js.
+    const router = useRouter();
+
+    // Hook de Redux para enviar acciones.
     const dispatch = useDispatch();
 
-    // Inicializamos el hook de navegación.
-    const navigate = useNavigate();
-
-    // Extraemos valores del estado de autenticación desde Redux.
+    // Extraemos el estado de autenticación desde Redux.
     const { authUser, loading } = useSelector((state) => state.auth);
 
     // Configuración del formulario con `react-hook-form`.
@@ -40,20 +43,22 @@ const LoginPage = () => {
 
         if (loginUser.fulfilled.match(action)) {
             toast.success('Inicio de sesión exitoso', { id: 'loginPage' });
-            navigate('/');
+            router.push('/');
         }
     };
 
-    // Si el usuario ya está autenticado, lo redirigimos a la página de inicio.
-    if (authUser) {
-        return <Navigate to="/" />;
-    }
+    // Redirigimos automáticamente si el usuario ya está autenticado.
+    useEffect(() => {
+        if (authUser) {
+            router.replace('/');
+        }
+    }, [authUser, router]);
 
     return (
         <main>
             <h2>Página de login</h2>
 
-            {/* Utilizamos FormProvider para proporcionar los métodos de react-hook-form */}
+            {/* Proveemos los métodos del formulario a los inputs personalizados. */}
             <FormProvider {...methods}>
                 <form onSubmit={handleSubmit(onSubmit)}>
                     {/* Campo email. */}

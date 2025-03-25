@@ -5,7 +5,11 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import toast from 'react-hot-toast';
 
 // Importamos funciones auxiliares.
-import { handleApiResponse, API_URL } from './playerApi';
+import { handleApiResponse } from './playerApi';
+
+// Importamos las variables de entorno.
+import { getEnv } from '../../../config/env';
+const { apiUrl } = getEnv();
 
 // Acción asincrónica para obtener la lista de jugadores basada en los valores de búsqueda.
 export const fetchPlayers = createAsyncThunk(
@@ -27,7 +31,7 @@ export const fetchPlayers = createAsyncThunk(
             }
 
             // Realizamos la petición al backend.
-            const res = await fetch(`${API_URL}/api/players${query}`);
+            const res = await fetch(`${apiUrl}/api/players${query}`);
 
             // Procesamos la respuesta.
             const body = await handleApiResponse(res);
@@ -46,7 +50,7 @@ export const fetchPlayerById = createAsyncThunk(
     'players/fetchPlayerById',
     async (playerId, { rejectWithValue }) => {
         try {
-            const res = await fetch(`${API_URL}/api/players/${playerId}`);
+            const res = await fetch(`${apiUrl}/api/players/${playerId}`);
             const body = await handleApiResponse(res);
             return body.data.player;
         } catch (err) {
@@ -61,7 +65,7 @@ export const createPlayer = createAsyncThunk(
     'players/createPlayer',
     async ({ formValues, authToken }, { rejectWithValue }) => {
         try {
-            const res = await fetch(`${API_URL}/api/players`, {
+            const res = await fetch(`${apiUrl}/api/players`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -85,7 +89,7 @@ export const updatePlayer = createAsyncThunk(
     'players/updatePlayer',
     async ({ playerId, formValues, authToken }, { rejectWithValue }) => {
         try {
-            const res = await fetch(`${API_URL}/api/players/${playerId}`, {
+            const res = await fetch(`${apiUrl}/api/players/${playerId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -110,7 +114,7 @@ export const addPlayerVideo = createAsyncThunk(
     async ({ playerId, url, authToken }, { rejectWithValue }) => {
         try {
             const res = await fetch(
-                `${API_URL}/api/players/${playerId}/videos`,
+                `${apiUrl}/api/players/${playerId}/videos`,
                 {
                     method: 'POST',
                     headers: {
@@ -137,7 +141,7 @@ export const sendHiringRequest = createAsyncThunk(
     async ({ playerId, authToken }, { rejectWithValue }) => {
         try {
             const res = await fetch(
-                `${API_URL}/api/players/${playerId}/hirings`,
+                `${apiUrl}/api/players/${playerId}/hirings`,
                 {
                     method: 'POST',
                     headers: {
@@ -163,7 +167,7 @@ export const fetchHiringRequests = createAsyncThunk(
         const { authToken } = getState().auth;
 
         try {
-            const res = await fetch(`${API_URL}/api/users/hirings`, {
+            const res = await fetch(`${apiUrl}/api/users/hirings`, {
                 headers: { Authorization: authToken },
             });
 
@@ -185,7 +189,7 @@ export const updateHiringRequest = createAsyncThunk(
     ) => {
         try {
             const res = await fetch(
-                `${API_URL}/api/players/${playerId}/hirings/${hiringId}`,
+                `${apiUrl}/api/players/${playerId}/hirings/${hiringId}`,
                 {
                     method: 'PUT',
                     headers: {

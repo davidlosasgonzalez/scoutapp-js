@@ -4,11 +4,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useForm, FormProvider } from 'react-hook-form';
 
 // Importamos los componentes.
-import PlayerListItem from '../components/PlayerListItem';
-import Input from '../components/Input';
+import PlayerListItem from '@/components/PlayerListItem';
+import Input from '@/components/Input';
 
 // Importamos la acción de Redux.
-import { fetchPlayers } from '../redux/slices/players';
+import { fetchPlayers } from '@/redux/slices/players';
 
 // Inicializamos el componente.
 const HomePage = () => {
