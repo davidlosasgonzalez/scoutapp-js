@@ -38,5 +38,6 @@ npm run dev  # Inicia el backend en modo desarrollo
 ```sh
 cd client
 npm install
+cp .env.local.example .env.local  # Configura las variables de entorno
 npm run dev  # Inicia el frontend en modo desarrollo
 ```
