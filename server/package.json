@@ -3,12 +3,13 @@
     "name": "server",
     "version": "1.0.0",
     "description": "Se trata de una web para poner en contacto a jóvenes promesas del mundo del fútbol con ojeadores deportivos. Existen dos tipos de usuario: familia y ojeador. Los primeros podrán añadir a sus hijos como jugadores y dar información detallada de sus habilidades como futbolistas. Los ojeadores podrán ver la lista de jugadores y realizar una solicitud de contratación si están interesados en un jugador.",
-    "main": "app.js",
+    "main": "dist/app.js",
     "scripts": {
-        "start": "node src/app.js",
-        "dev": "nodemon ./src/app.js",
-        "generate-tables": "node ./src/db/initDb.js",
-        "populate-tables": "node ./src/db/populateDb.js"
+        "clean": "rimraf dist",
+        "build": "npm run clean && tsc",
+        "start": "node dist/index.js",
+        "dev": "npm run build:watch",
+        "build:watch": "concurrently -k -n TSC,NODE \"tsc -w\" \"nodemon\""
     },
     "keywords": [],
     "author": "",
@@ -29,9 +30,20 @@
     },
     "devDependencies": {
         "@eslint/js": "^9.18.0",
+        "@types/bcrypt": "^5.0.2",
+        "@types/cors": "^2.8.17",
+        "@types/express": "^5.0.1",
+        "@types/express-fileupload": "^1.5.1",
+        "@types/fs-extra": "^11.0.4",
+        "@types/jsonwebtoken": "^9.0.9",
+        "@types/morgan": "^1.9.9",
+        "@types/node": "^22.13.13",
+        "concurrently": "^9.1.2",
         "eslint": "^9.18.0",
         "globals": "^15.14.0",
         "nodemon": "^3.1.9",
-        "prettier": "^3.4.2"
+        "prettier": "^3.4.2",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.8.2"
     }
 }
